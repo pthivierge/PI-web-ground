@@ -1,0 +1,115 @@
+/* Styles go here */
+
+.configuration input{
+    margin-bottom: 0.5em;
+}
+
+
+/* UI bootstrap styles */
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+
+
+
+.section-header{
+  position: relative;
+  padding: 30px 0;
+  color: #2d5389;
+  text-shadow: 0 1px 0 rgba(0,0,0,.1);
+  background-color: #00b3ee;
+  background-image: linear-gradient(to bottom,#00b3ee 0, #00bbf6 100%);
+  background-repeat: repeat-x;
+  margin-bottom: 40px;
+}
+
+.section-header h1 {
+  margin-top: 0;
+  color: #fff;
+}
+
+@media (min-width: 768px){
+  .section-header {
+    padding-top: 60px;
+    padding-bottom: 60px;
+    font-size: 24px;
+    text-align: left;
+  }
+
+  .section-header h1 {
+    font-size: 60px;
+    line-height: 1;
+  }
+
+}
+
+
+
+/*
+lukehaas
+https://github.com/lukehaas/css-loaders
+MIT License (MIT)
+*/
+.loader:before,
+.loader:after,
+.loader {
+
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+  -webkit-animation: load7 1.8s infinite ease-in-out;
+  animation: load7 1.8s infinite ease-in-out;
+  z-index: 999;
+}
+.loader {
+  float: right;
+  font-size: 5px;
+  z-index: 999;
+  margin-right: 4em;
+ /* position: relative; */
+  text-indent: -9999em;
+  -webkit-transform: translateZ(0);
+  -ms-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+.loader:before {
+  left: -3.5em;
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 3.5em;
+}
+.loader:before,
+.loader:after {
+  content: '';
+  position: absolute;
+  top: 0;
+}
+@-webkit-keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em #286090;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0 #286090;
+  }
+
+}
+@keyframes load7 {
+  0%,
+  80%,
+  100% {
+    box-shadow: 0 2.5em 0 -1.3em #286090;
+  }
+  40% {
+    box-shadow: 0 2.5em 0 0 #286090;
+  }
+}
+
+
+/***/

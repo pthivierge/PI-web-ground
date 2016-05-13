@@ -1,0 +1,59 @@
+
+<div class="configuration">
+
+
+    <div class="container">
+
+
+
+
+        <h1>Active Database and Servers</h1>
+
+        <!-- af server -->
+        <label>Select AF Server</label>
+        <select ng-model="assetServer.WebId" class="form-control">
+            <option ng-repeat="server in assetServers" value="{{server.WebId}}">{{server.Name}}</option>
+        </select>
+
+        <!-- af databases -->
+        <label>AF Server Database</label>
+        <select ng-model="assetServer.Database" class="form-control">
+            <option ng-repeat="database in assetServer.Databases" value="{{database.WebId}}">{{database.Name}}
+            </option>
+        </select>
+
+        <!-- web api url -->
+        <label>PI Data Archive</label>
+        <select ng-model="dataServer.WebId" class="form-control">
+            <option ng-repeat="server in dataServers" value="{{server.WebId}}">{{server.Name}}</option>
+        </select>
+
+
+        <button class="btn btn-primary" ng-click="configure()"> Configure</button>
+    </div>
+
+</div>
+
+
+<div ng-cloak ng-show="activeView.name==='Write'">
+    <div class="container">
+
+        <h1>Write value with Web ID</h1>
+
+        <label>Attribute Web Id</label>
+        <input ng-model="WebId" class="form-control" type="text" placeholder="Web Id"/>
+
+        <label>Write AF Value</label>
+        <input ng-model="AfValue" class="form-control" type="text" placeholder="Value to write"/>
+
+        <div class="center-text">
+            <button ng-click="writeAFValue()" class="btn btn-primary">Write</button>
+        </div>
+    </div>
+
+</div>
+
+<div ng-cloak ng-show="activeView.name==='Connection'">
+
+
+</div>

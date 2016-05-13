@@ -1,0 +1,33 @@
+
+    <div class="panel panel-default" style="margin: 1em;">
+
+        <div class="row">
+            <div class="col-sm-8">
+                <h2>Messages: {{messages.length}}</h2>
+            </div>
+            <div class="col-sm-4">
+                <div class="text-center">
+                    <button ng-click="clearMessages()" class="btn btn-success">Clear Messages</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="panel-body">
+
+
+            <!-- Global error messages -->
+
+            <div ng-repeat="message in messages" class="alert alert-{{message.type}}" role="alert">
+                {{message.message}}
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
