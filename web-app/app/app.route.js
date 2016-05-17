@@ -6,9 +6,9 @@
     var app = angular.module('app');
 
     var routes = [
-        { route: '/', templateUrl: 'app/components/configuration.html' },
-        { route: '/configuration', templateUrl: 'app/components/configuration.html' },
-        { route: '/info', templateUrl: 'app/components/connection-information.html' }
+        { route: '/', templateUrl: 'app/components/configuration/configuration.html' },
+        { route: '/configuration', templateUrl: '/app/components/configuration/configuration.html' },
+        { route: '/info', templateUrl: '/app/components/configuration/connection-information.html' }
     ];
 
     // locationProvider - creates friendly urls in the adress bar
@@ -16,11 +16,14 @@
     app.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
 
         // builds the routes for all our reports
-        angular.forEach(routes, function (report) {
-            $routeProvider.when(report.route, {
-                templateUrl: report.templateUrl,
-                reloadOnSearch: false
-            });
+        angular.forEach(routes, function (route) {
+            $routeProvider.when(route.route,
+                {
+                    templateUrl: route.templateUrl,
+                    reloadOnSearch: false
+                });
+
+            console.log('Configured route', route.route);
         });
 
         // use the HTML5 History API
@@ -29,9 +32,30 @@
     ]);
 
 
-    app.run(['$rootScope', function ($rootScope) {
-        $rootScope.reportsDefinitions = routes;
-    }]);
+    app.run([
+      '$rootScope',
+      function ($rootScope) {
+          // see what's going on when the route tries to change
+          $rootScope.$on('$routeChangeStart', function (event, next, current) {
+              // next is an object that is the route that we are starting to go to
+              // current is an object that is the route where we are currently
+              var currentPath = current.originalPath;
+              var nextPath = next.originalPath;
+
+              console.log('Starting to leave %s to go to %s', currentPath, nextPath);
+          });
+
+          $rootScope.$on('$routeChangeError', function (angularEvent, current, previous, rejection) {
+
+              console.log('error with %s', angularEvent);
+
+          });
+
+          $rootScope.$on('$routeChangeSuccess',function(angularEvent, current, previous) {
+              console.log('success with %s', angularEvent);
+          });
+      }
+    ]);
 
 
 })();

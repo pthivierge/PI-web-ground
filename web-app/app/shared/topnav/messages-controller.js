@@ -2,6 +2,7 @@
 (function () {
     var app = angular.module("app");
     app.controller('messagesCtrl', function ($scope, $uibModalInstance, messages) {
+
         $scope.messages = messages;
 
         // clears the messages

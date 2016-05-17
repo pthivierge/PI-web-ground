@@ -12,8 +12,8 @@
             <span class="navbar-brand">PI Web API</span>
 
             <ul class="nav navbar-nav">
-                <li><a ng-click="$storage.currentPage='/'" href="#">Configuration</a></li>
-                <li><a ng-click="$storage.currentPage='/info'" href="#">Connection info</a></li>
+                <li><a ng-click="$storage.currentPage='/configuration'" href="/configuration">Configuration</a></li>
+                <li><a ng-click="$storage.currentPage='/info'" href="/info">Connection info</a></li>
                 <li ng-cloak uib-dropdown>
                     <a href="#" uib-dropdown-toggle>PI Data Archive<b class="caret"></b></a>
                     <ul uib-dropdown-menu="menu">
@@ -49,9 +49,5 @@
             </ul>
         </div>
 
-        <!--collapsable menu -->
-        <!--<div class="collapse navbar-collapse" collapse="navCollapsed">-->
-        <!--</div>-->
-        <!-- /.navbar-collapse -->
     </div>
 </nav>

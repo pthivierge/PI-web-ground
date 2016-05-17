@@ -10,12 +10,18 @@
 </head>
 <body>
 
-    <div ng-c></div>
 
-    <div ng-include src="'app/shared/topnav/nav.html'"></div>
-    
-    <div ng-include="$storage.currentPage"></div>
-    <button ng-click="alert()">Create dummy alert</button>
+
+    <div ng-controller="mainController">
+        <div ng-include src="'app/shared/topnav/nav.html'"></div>
+
+        <!--here each template will make use of its own controller, which will be a child controller of the mainController-->
+        <div ng-include src="$route.current.templateUrl"></div>
+
+        <button ng-click="alert()">Create dummy alert</button>
+    </div>
+
+
     <!-- Libraries -->
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/ngstorage/ngStorage.js"></script>
@@ -30,6 +36,11 @@
     <script src="app/components/pi-data-archive/pi-data-archive.js"></script>
     <script src="app/shared/pi-web-api-service.js"></script>
 
+    <!-- Controllers -->
     <script src="app/shared/main-controller.js"></script>
+<script src="app/components/configuration/connection-controller.js"></script>
+    <script src="app/shared/topnav/messages-controller.js"></script>
+        
+
 </body>
 </html>

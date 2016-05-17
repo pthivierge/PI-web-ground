@@ -1,7 +1,7 @@
 (function(){
 
 var app = angular.module("app");
-app.controller('mainCtrl', function ($scope, $localStorage, $sessionStorage, piWebApiHttpService, $uibModal) {
+app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorage, piWebApiHttpService, $uibModal) {
 
     // Controller init - when page loads
     function init() {
@@ -19,6 +19,8 @@ app.controller('mainCtrl', function ($scope, $localStorage, $sessionStorage, piW
     // Connect to PI Web API and reads the connection information
     $scope.connect = function () {
 
+        console.log("Trying connection ... ");
+
         $scope.loading++;
         $scope.alerts.length = 0;
 
@@ -35,8 +37,8 @@ app.controller('mainCtrl', function ($scope, $localStorage, $sessionStorage, piW
 
         function onSuccess(response) {
             $scope.connectionSuccess = true;
-            $scope.userInfo = response.data;
-            $scope.alerts.push({
+            $scope.$parent.userInfo = response.data;
+            $scope.$parent.alerts.push({
                 type: 'success', message: "Connection succeeded. (the call to /system/userinfo returned 200 OK) "
             });
 
@@ -52,7 +54,7 @@ app.controller('mainCtrl', function ($scope, $localStorage, $sessionStorage, piW
                 $scope.alerts.push({type: 'danger', message: errMessage});
             }
             catch (err) {
-                $scope.alerts.push({
+                $scope.$parent.alerts.push({
                     type: 'danger',
                     message: "There was an error with the PI WEB Call.  Make sure the address is correct or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
                 });
@@ -63,30 +65,6 @@ app.controller('mainCtrl', function ($scope, $localStorage, $sessionStorage, piW
 
     };
 
-    // displays the messages
-    $scope.openMessages = function () {
-
-        var modalInstance = $uibModal.open({
-            animation: $scope.animationsEnabled,
-            templateUrl: 'shared/messages.html',
-            controller: 'messagesCtrl',
-            //  size: size,
-            resolve: {
-                messages: function () {
-                    return $scope.alerts;
-                }
-            }
-        });
-    };
-
-    // temp to be deleted
-    $scope.alert = function () {
-        $scope.alerts.push({
-            type: 'danger',
-            message: "There was an error with the PI WEB Call.  Make sure the address is correct or that the service is running."
-        });
-
-    };
 
     init();
 });
