@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="bower_components/angular-aside/dist/css/angular-aside.min.css">
     <link rel="stylesheet" href="assets/css/style.css" />
+    <link href="bower_components/ng-table/dist/ng-table.css" rel="stylesheet" />
     <!--Required for $location - allows navigation in this single page application-->
     <base href="/" />
 </head>
@@ -18,7 +19,6 @@
         <!--here each template will make use of its own controller, which will be a child controller of the mainController-->
         <div ng-include src="$route.current.templateUrl"></div>
 
-        <button ng-click="alert()">Create dummy alert</button>
     </div>
 
 
@@ -28,6 +28,7 @@
     <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/angular-aside/dist/js/angular-aside.js"></script>
+    <script src="bower_components/ng-table/dist/ng-table.js"></script>
 
     <!-- Factories and services -->
     <!--Application scripts-->
@@ -38,9 +39,12 @@
 
     <!-- Controllers -->
     <script src="app/shared/main-controller.js"></script>
-<script src="app/components/configuration/connection-controller.js"></script>
+    <script src="app/components/configuration/connection-controller.js"></script>
     <script src="app/shared/topnav/messages-controller.js"></script>
-        
+
+    <script src="app/components/data-validation/data-validation.js"></script>
+
+
 
 </body>
 </html>

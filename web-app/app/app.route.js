@@ -8,7 +8,8 @@
     var routes = [
         { route: '/', templateUrl: 'app/components/configuration/configuration.html' },
         { route: '/configuration', templateUrl: '/app/components/configuration/configuration.html' },
-        { route: '/info', templateUrl: '/app/components/configuration/connection-information.html' }
+        { route: '/info', templateUrl: '/app/components/configuration/connection-information.html' },
+        { route: '/data-validation', templateUrl: '/app/components/data-validation/data-validation.html' }
     ];
 
     // locationProvider - creates friendly urls in the adress bar

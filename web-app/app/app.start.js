@@ -10,6 +10,7 @@
         // Angular modules (services and factories)
         'ngRoute',
         'ngStorage',
+        "ngTable",
 
         // Custom modules -
 

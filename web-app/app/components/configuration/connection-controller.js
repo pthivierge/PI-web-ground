@@ -11,8 +11,8 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
         $scope.loading = 0;
         $scope.assetServer = {};
         $scope.dataServer = {};
-        $scope.configuration = $scope.$storage.configuration;
-
+        $scope.configuration = $localStorage.configuration;
+        $scope.userInfo = $localStorage.userInfo;
 
     }
 
@@ -37,7 +37,7 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
 
         function onSuccess(response) {
             $scope.connectionSuccess = true;
-            $scope.$parent.userInfo = response.data;
+            $localStorage.userInfo = response.data;
             $scope.$parent.alerts.push({
                 type: 'success', message: "Connection succeeded. (the call to /system/userinfo returned 200 OK) "
             });
@@ -47,6 +47,7 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
 
         function onError(err) {
             $scope.connectionSuccess = false;
+            $localStorage.userInfo = {};
             $scope.userInfo = {};
 
             try {
