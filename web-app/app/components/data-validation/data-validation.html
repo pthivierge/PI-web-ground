@@ -1,76 +1,108 @@
-﻿
+﻿<div class="container">
     <div class="row">
         <div class="col-xs-12">
-            <h2 class="page-header">Batch editable table</h2>
+            <h2 class="page-header">Data validation</h2>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="bs-callout bs-callout-info">
                         <h4>Overview</h4>
-                        <p>Example of how to create a batch editable table.</p>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="bs-callout bs-callout-warning">
-                        <h4>Notice</h4>
-                        <p>There are several directives in use that track dirty state and validity of the table rows. Whilst they are reasonally capable they are <em>not production tested - use at your own risk!</em> <a href="#" ng-click="isExplanationOpen = !isExplanationOpen">More details...</a></p>
-                        <div ng-show="isExplanationOpen">
-                            <p>If you look at the declarative markup for the <code>ngTable</code> you'll see a bunch of nested <code>ngForm</code> directives, with a common ancestor <code>ngForm</code> at the level of the table element. Each nested <code>ngForm</code>                propogates their <code>$dirty</code> and <code>$invalid</code> state to this top level <code>ngForm</code>. This works great as you can enable/disable the buttons for saving the table based on the status of this single top-level <code>ngForm</code>.</p>
-                            <p>This works up till the point that the user select's a new page to display in the table. At which point the existing nested <code>ngForm</code> directives are swapped out for new instances as the new data page is loaded. These new <code>ngForm</code>                directives are always pristine and valid and this status propogates setting the corrosponding state on the top-level to be pristine and valid even though rows from the previous page are dirty and possibly invalid.</p>
-                            <p>The solution is to have a set of directives that sit parallel to the <code>ngForm</code> directives that remember the state of the rows when the corrosponding <code>ngFrom</code> directives are destroyed and recreated. When <code>ngForm</code>                directives are recreated they have their status reset by the directives that have remembered this state.</p>
-                        </div>
+                        <p>Example of how to create data validation</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6" ng-controller="dataValidationCtrl as demo">
+        <div class="col-md-12" ng-controller="demoController as demo">
+
             <h3>ngTable directive</h3>
-            <div class="brn-group pull-right">
-                <button class="btn btn-default" ng-if="demo.isEditing" ng-click="demo.cancelChanges()">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
-                <button class="btn btn-primary" ng-if="!demo.isEditing" ng-click="demo.isEditing = true">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                </button>
-                <button class="btn btn-primary" ng-if="demo.isEditing" ng-disabled="!demo.hasChanges() || demo.tableTracker.$invalid" ng-click="demo.saveChanges()">
-                    <span class="glyphicon glyphicon-ok"></span>
-                </button>
-                <button class="btn btn-default" ng-click="demo.add()">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
-            </div>
-            <table ng-table="demo.tableParams" class="table table-bordered table-hover table-condensed editable-table" ng-form="demo.tableForm" disable-filter="demo.isAdding" demo-tracked-table="demo.tableTracker">
+            <table ng-table="demo.tableParams" class="table table-bordered table-hover table-condensed editable-table demoTable" ng-form="demo.tableForm" disable-filter="demo.isAdding" demo-tracked-table="demo.tableTracker">
                 <colgroup>
-                    <col width="70%" />
-                    <col width="12%" />
-                    <col width="13%" />
-                    <col width="5%" />
+                    <col width="65%"/>
+                    <col width="10%"/>
+                    <col width="10%"/>
+                    <col width="15%"/>
                 </colgroup>
                 <tr ng-repeat="row in $data" ng-form="rowForm" demo-tracked-table-row="row">
-                    <td title="'Name'" filter="{name: 'text'}" sortable="'name'" ng-switch="demo.isEditing" ng-class="name.$dirty ? 'bg-warning' : ''" ng-form="name" demo-tracked-table-cell>
+                    <td title="'Name'" filter="{name: 'text'}" sortable="'name'" ng-switch="row.isEditing" ng-class="name.$dirty ? 'bg-warning' : ''" ng-form="name" demo-tracked-table-cell>
                         <span ng-switch-default class="editable-text">{{row.name}}</span>
                         <div class="controls" ng-class="name.$invalid && name.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                            <input type="text" name="name" ng-model="row.name" class="editable-input form-control input-sm" required />
+                            <input type="text" name="name" ng-model="row.name" class="editable-input form-control input-sm" required/>
                         </div>
                     </td>
-                    <td title="'Age'" filter="{age: 'number'}" sortable="'age'" ng-switch="demo.isEditing" ng-class="age.$dirty ? 'bg-warning' : ''" ng-form="age" demo-tracked-table-cell>
+                    <td title="'Age'" filter="{age: 'number'}" sortable="'age'" ng-switch="row.isEditing" ng-class="age.$dirty ? 'bg-warning' : ''" ng-form="age" demo-tracked-table-cell>
                         <span ng-switch-default class="editable-text">{{row.age}}</span>
                         <div class="controls" ng-class="age.$invalid && age.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                            <input type="number" name="age" ng-model="row.age" class="editable-input form-control input-sm" required />
+                            <input type="number" name="age" ng-model="row.age" class="editable-input form-control input-sm" required/>
                         </div>
                     </td>
-                    <td title="'Money'" filter="{money: 'number'}" sortable="'money'" ng-switch="demo.isEditing" ng-class="money.$dirty ? 'bg-warning' : ''" ng-form="money" demo-tracked-table-cell>
+                    <td title="'Money'" filter="{money: 'number'}" sortable="'money'" ng-switch="row.isEditing" ng-class="money.$dirty ? 'bg-warning' : ''" ng-form="money" demo-tracked-table-cell>
                         <span ng-switch-default class="editable-text">{{row.money}}</span>
                         <div class="controls" ng-class="money.$invalid && money.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                            <input type="number" name="money" ng-model="row.money" class="editable-input form-control input-sm" required />
+                            <input type="number" name="money" ng-model="row.money" class="editable-input form-control input-sm" required/>
                         </div>
                     </td>
                     <td>
-                        <button class="btn btn-danger btn-sm" ng-click="demo.del(row)" ng-disabled="!demo.isEditing"><span class="glyphicon glyphicon-trash"></span></button>
+                        <button class="btn btn-primary btn-sm" ng-click="demo.save(row, rowForm)" ng-if="row.isEditing" ng-disabled="rowForm.$pristine || rowForm.$invalid"><span class="glyphicon glyphicon-ok"></span></button>
+                        <button class="btn btn-default btn-sm" ng-click="demo.cancel(row, rowForm)" ng-if="row.isEditing"><span class="glyphicon glyphicon-remove"></span></button>
+                        <button class="btn btn-default btn-sm" ng-click="row.isEditing = true" ng-if="!row.isEditing"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <button class="btn btn-danger btn-sm" ng-click="demo.del(row)" ng-if="!row.isEditing"><span class="glyphicon glyphicon-trash"></span></button>
                     </td>
                 </tr>
             </table>
+            
+        </div>
+     
+    </div>
+
+
+            <!--<h3>ngTable directive</h3>
+            <div class="brn-group pull-right">
+                <button class="btn btn-default" ng-if="isEditing" ng-click="cancelChanges()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+                <button class="btn btn-primary" ng-if="!isEditing" ng-click="isEditing = true">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </button>
+                <button class="btn btn-primary" ng-if="isEditing" ng-disabled="!hasChanges() || tableTracker.$invalid" ng-click="saveChanges()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+                <button class="btn btn-default" ng-click="add()">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </div>
+            <table ng-table="tableParams" class="table table-bordered table-hover table-condensed editable-table" ng-form="tableForm" disable-filter="isAdding" demo-tracked-table="tableTracker">
+                <colgroup>
+                    <col width="70%"/>
+                    <col width="12%"/>
+                    <col width="13%"/>
+                    <col width="5%"/>
+                </colgroup>
+                <tr ng-repeat="row in $data" ng-form="rowForm" demo-tracked-table-row="row">
+                    <td title="'Name'" filter="{name: 'text'}" sortable="'name'" ng-switch="isEditing" ng-class="name.$dirty ? 'bg-warning' : ''" ng-form="name" demo-tracked-table-cell>
+                        <span ng-switch-default class="editable-text">{{row.name}}</span>
+                        <div class="controls" ng-class="name.$invalid && name.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                            <input type="text" name="name" ng-model="row.name" class="editable-input form-control input-sm" required/>
+                        </div>
+                    </td>
+                    <td title="'Age'" filter="{age: 'number'}" sortable="'age'" ng-switch="isEditing" ng-class="age.$dirty ? 'bg-warning' : ''" ng-form="age" demo-tracked-table-cell>
+                        <span ng-switch-default class="editable-text">{{row.age}}</span>
+                        <div class="controls" ng-class="age.$invalid && age.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                            <input type="number" name="age" ng-model="row.age" class="editable-input form-control input-sm" required/>
+                        </div>
+                    </td>
+                    <td title="'Money'" filter="{money: 'number'}" sortable="'money'" ng-switch="isEditing" ng-class="money.$dirty ? 'bg-warning' : ''" ng-form="money" demo-tracked-table-cell>
+                        <span ng-switch-default class="editable-text">{{row.money}}</span>
+                        <div class="controls" ng-class="money.$invalid && money.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                            <input type="number" name="money" ng-model="row.money" class="editable-input form-control input-sm" required/>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" ng-click="del(row)" ng-disabled="!isEditing"><span class="glyphicon glyphicon-trash"></span></button>
+                    </td>
+                </tr>
+            </table>-->
         </div>
         
     </div>
+
