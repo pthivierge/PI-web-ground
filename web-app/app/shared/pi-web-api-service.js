@@ -116,6 +116,14 @@ app.factory('piWebApiHttpService', ['$http', '$q', function($http, $q) {
     });
   };
 
+  // executes a query against the API - can be anything you specify
+  service.query=function(url) {
+      return $http.get(url).then(function (response) {
+       //   console.log(response);
+          return response;
+      });
+  }
+
 
   return service;
 }]);
