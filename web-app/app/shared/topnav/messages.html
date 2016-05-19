@@ -1,32 +1,40 @@
 
-    <div class="panel panel-default" style="margin: 1em;">
+<div class="panel panel-default" style="margin: 1em;padding: 0.3em">
 
-        <div class="row">
-            <div class="col-sm-8">
-                <h2>Messages: {{messages.length}}</h2>
-            </div>
-            <div class="col-sm-4">
-                <div class="text-center">
-                    <button ng-click="clearMessages()" class="btn btn-success">Clear Messages</button>
-                </div>
+    <div class="row table-bordered">
+        <div class="col-sm-8">
+            <div class="page-header">
+                <h2>Messages <small> currently {{messages.length}}</small></h2>
             </div>
         </div>
+        <div class="col-sm-4">
+            <div class="text-center">
 
-
-
-        <div class="panel-body">
-
-
-            <!-- Global error messages -->
-
-            <div ng-repeat="message in messages" class="alert alert-{{message.type}}" role="alert">
-                {{message.message}}
+                <button ng-click="clearMessages()" class="btn btn-primary" type="button" style="margin-top: 10px">
+                    Clear All
+                </button>
             </div>
-
         </div>
+    </div>
+
+    <div class="panel-body">
+        <!-- Global error messages -->
+        <!-- // very interesting could be used to save creating too much files-->
+        <!--<script type="text/ng-template" id="alert.html">
+            <div class="alert" style="background-color:#fa39c3;color:white" role="alert">
+                <div ng-transclude></div>
+            </div>
+              <uib-alert template-url="alert.html">A happy alert!</uib-alert>
+        </script>-->
+
+        <!-- why does the close button is not there? -->
+        <uib-alert ng-repeat="message in messages" type="{{message.type}}" close="closeMessage($index)">{{message.message}}</uib-alert>
 
 
     </div>
+
+
+</div>
 
 
 

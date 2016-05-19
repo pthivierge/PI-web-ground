@@ -13,18 +13,17 @@
 
             <ul class="nav navbar-nav">
                 <li><a ng-click="$storage.currentPage='/configuration'" href="/configuration">Configuration</a></li>
-                <li><a ng-click="$storage.currentPage='/info'" href="/info">Connection info</a></li>
                 <li><a ng-click="$storage.currentPage='/data-validation'" href="/data-validation">Data Validation</a></li>
-                <!--<li ng-cloak uib-dropdown>
-                    <a href="#" uib-dropdown-toggle>PI Data Archive<b class="caret"></b></a>
+                <li ng-cloak uib-dropdown>
+                    <a href="#" uib-dropdown-toggle>Basic Samples<b class="caret"></b></a>
                     <ul uib-dropdown-menu="menu">
-                        <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Search tags</a></li>
-                        <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Retrieve single values</a></li>
-                        <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Retrieve time series data</a></li>
-                        <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Charts</a></li>
+                        <li><a ng-click="$storage.currentPage='/oops'" href="/oops">Search tags</a></li>
+                        <li><a ng-click="$storage.currentPage='/oops'" href="/oops">Retrieve single values</a></li>
+                        <li><a ng-click="$storage.currentPage='/oops'" href="/oops">Retrieve time series data</a></li>
+                        <li><a ng-click="$storage.currentPage='/oops'" href="/oops">Charts</a></li>
                     </ul>
                 </li>
-                <li ng-cloak uib-dropdown>
+                <!--<li ng-cloak uib-dropdown>
                     <a href="#" uib-dropdown-toggle>PI Assets(AF)<b class="caret"></b></a>
                     <ul uib-dropdown-menu="menu">
                         <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Search Assets</a></li>

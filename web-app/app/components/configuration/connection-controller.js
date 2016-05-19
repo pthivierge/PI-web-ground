@@ -5,8 +5,7 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
 
     // Controller init - when page loads
     function init() {
-
-
+        
         $scope.alerts = []; // {type:'danger|warning|success',message:''}
         $scope.loading = 0;
         $scope.assetServer = {};

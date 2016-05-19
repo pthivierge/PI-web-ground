@@ -8,8 +8,8 @@
     var routes = [
         { route: '/', templateUrl: 'app/components/configuration/configuration.html' },
         { route: '/configuration', templateUrl: '/app/components/configuration/configuration.html' },
-        { route: '/info', templateUrl: '/app/components/configuration/connection-information.html' },
-        { route: '/data-validation', templateUrl: '/app/components/data-validation/data-validation.html' }
+        { route: '/data-validation', templateUrl: '/app/components/data-validation/data-validation.html' },
+        { route: '/oops', templateUrl: '/app/shared/NotImplemented.html' }
     ];
 
     // locationProvider - creates friendly urls in the adress bar
@@ -47,7 +47,7 @@
               var currentPath = current.originalPath;
               var nextPath = next.originalPath;
 
-                console.log('Starting to leave %s to go to %s', currentPath, nextPath);
+              console.log('Starting to leave %s to go to %s', currentPath, nextPath);
           });
 
           $rootScope.$on('$routeChangeError', function (angularEvent, current, previous, rejection) {
@@ -56,7 +56,7 @@
 
           });
 
-          $rootScope.$on('$routeChangeSuccess',function(angularEvent, current, previous) {
+          $rootScope.$on('$routeChangeSuccess', function (angularEvent, current, previous) {
               console.log('success with %s', angularEvent);
           });
       }

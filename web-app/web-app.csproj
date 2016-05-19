@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>server</RootNamespace>
-    <AssemblyName>server</AssemblyName>
+    <RootNamespace>WebApp</RootNamespace>
+    <AssemblyName>web-app</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
@@ -65,11 +65,11 @@
     <Content Include="app\app.route.js" />
     <Content Include="app\app.start.js" />
     <Content Include="app\components\configuration\configuration.html" />
-    <Content Include="app\components\configuration\connection-information.html" />
     <Content Include="app\components\data-validation\data-validation.html" />
     <Content Include="app\components\data-validation\data-validation.js" />
     <Content Include="app\components\pi-data-archive\pi-data-archive.html" />
     <Content Include="app\components\pi-data-archive\pi-data-archive.js" />
+    <Content Include="app\shared\NotImplemented.html" />
     <Content Include="app\shared\topnav\messages-controller.js" />
     <Content Include="app\shared\main-controller.js" />
     <Content Include="app\shared\topnav\messages.html" />
@@ -460,7 +460,9 @@
     <Folder Include="assets\libs\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="web.config" />
+    <Content Include="web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="bower_components\ng-table\.bower.json" />
     <Content Include="bower_components\ng-table\.bowerrc" />
     <Content Include="bower_components\ng-table\.editorconfig" />

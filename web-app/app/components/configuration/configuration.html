@@ -3,55 +3,84 @@
 <div class="section-header">
     <div class="container">
         <h1>PI Web API Demo</h1>
-        <p>This is a simple Web application. It is using PI WEB API data and built using angular js and twitter
+        <p>
+            This is a simple Web application. It is using PI WEB API data and built using angular js and twitter
             bootstrap. To work it needs to be configured properly with a valid PI Web API url. if you are using basic
-            authentication you'll need to check the Basic Authentication box and enter your username and password.</p>
-        <p><a class="btn btn-primary btn-lg" href="https://techsupport.osisoft.com/Documentation/PI-Web-API/help.html"
-              role="button">Learn more</a></p>
+            authentication you'll need to check the Basic Authentication box and enter your username and password.
+        </p>
+        <p>
+            <a class="btn btn-primary btn-lg" href="https://techsupport.osisoft.com/Documentation/PI-Web-API/help.html"
+               role="button">Learn more</a>
+        </p>
     </div>
 </div>
 
 <div ng-controller="connectionCtrl" class="container">
 
-    <!-- URL -->
-    <div class="panel panel-primary">
-        <div class="panel-heading"><b>PI Web API URL Configuration</b></div>
-        <div class="panel-body">
-            <label>Enter the PI Web API URL here:</label>
-            <div class="input-group">
-                <input ng-model="configuration.url" class="form-control alert alert-{{connectionSuccess?'success':'danger'}}" type="url"
-                       placeholder="Enter PI Web API url"/>
-                <span class="input-group-addon"><i class="glyphicon glyphicon-home"></i></span>
+
+    <div class="row">
+        <div class="col-md-6">
+            <!-- URL -->
+            <div class="panel panel-primary">
+                <div class="panel-heading"><b>PI Web API URL Configuration</b></div>
+                <div class="panel-body">
+                    <label>Enter the PI Web API URL here:</label>
+                    <div class="input-group">
+                        <input ng-model="configuration.url" class="form-control alert alert-{{connectionSuccess?'success':'danger'}}" type="url"
+                               placeholder="Enter PI Web API url" />
+                        <span class="input-group-addon"><i class="glyphicon glyphicon-home"></i></span>
+                    </div>
+                </div>
             </div>
+
+
+            <!-- Basic Auth. User and Password -->
+            <div class="panel panel-primary">
+                <div class="panel-heading"><b>If applies, configure Basic Authentication</b></div>
+                <div class="panel-body">
+
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="configuration.authType" ng-true-value="'Basic'" ng-false-value="'Kerberos'">Enable Basic Authentication</label>
+                    </div>
+
+
+                    <label>
+                        Enter username:
+                        <input class="form-control" ng-model="configuration.user" placeholder="User name" type="text" />
+                    </label>
+
+                    <label>
+                        Enter password:
+                        <input class="form-control" ng-model="configuration.password" placeholder="Password" type="password" />
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+           
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><b>Connection User Information</b></div>
+                    <table class="table table-striped">
+                        <tr ng-repeat="(key, value) in userInfo">
+                            <td><b>{{key}}</b></td>
+                            <td>{{value}}</td>
+                        </tr>
+                    </table>
+
+                </div>
+
+          
         </div>
     </div>
 
 
-    <!-- URL -->
-    <div class="panel panel-primary">
-        <div class="panel-heading"><b>If applies, configure Basic Authentication</b></div>
-        <div class="panel-body">
 
-
-            <div class="checkbox">
-                <label><input type="checkbox"  ng-model="configuration.authType" ng-true-value="'Basic'" ng-false-value="'Kerberos'">Enable Basic Authentication</label>
-            </div>
-
-
-            <label>Enter username:
-                <input class="form-control" ng-model="configuration.user" placeholder="User name" type="text"/>
-            </label>
-
-            <label>Enter password:
-                <input class="form-control" ng-model="configuration.password" placeholder="Password" type="password"/>
-            </label>
-        </div>
-    </div>
 
 
     <div class="text-center">
         <btn ng-click="connect()" class="btn btn-primary">Try Connection</btn>
     </div>
-
-
 </div>
+
+
