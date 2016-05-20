@@ -37,14 +37,18 @@
                 <div class="col-md-3">
 
                     <button ng-click="demo.reloadData()" type="button" class="btn btn-danger" style="margin-top: 20px">Get Data</button>
+                </div> 
+                <div class="col-md-3">
+                    <input type="text" class="form-control" ng-model="demo.$localStorage.dataValidation.elementPath"   />
                 </div>
-                <div class="col-md-3"></div>
-                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" ng-model="demo.$localStorage.dataValidation.attributeCategory" />
+                </div>
             </div>
 
 
             <div style="margin-top: 2em" class="panel panel-default">
-                <div class="panel-heading"><b>Data to validate</b></div>
+                <div class="panel-heading"><b>Data to validate - {{demo.attributeName}}</b></div>
                 <table ng-table="demo.tableParams" class="table table-bordered table-hover table-condensed editable-table demoTable" ng-form="demo.tableForm" disable-filter="demo.isAdding" demo-tracked-table="demo.tableTracker">
                     <colgroup>
                         <col width="10%" />
@@ -68,7 +72,16 @@
                         <td title="'Flag'" filter="{flag: 'text'}" sortable="'flag'" ng-switch="row.isEditing" ng-class="flag.$dirty ? 'bg-warning' : ''" ng-form="flag" demo-tracked-table-cell>
                             <span ng-switch-default class="editable-text">{{row.flag}}</span>
                             <div class="controls" ng-class="flag.$invalid && flag.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                                <input type="text" name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required />
+                                <!-- <input type="text" name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required/>-->
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle"  type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        T
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                        <li><a href="#">Action</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </td>
                         <td>

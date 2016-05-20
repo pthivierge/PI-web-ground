@@ -6,17 +6,37 @@
 //lodash.js
 (function () {
     "use strict";
-    
-    angular.module("app").controller("demoController", demoController);
-    demoController.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser"];
 
-    function demoController($scope, NgTableParams, piWebApiHttpService, uibDateParser) {
+    angular.module("app").controller("demoController", demoController);
+    demoController.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage","$q"];
+
+
+
+    function demoController($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage,$q) {
+
+        // this controller is making use of "this" instead of $scope.  this is another style with angularJS, it works almost same as $scope as long as 
+        // the controller in the html is declared like : ng-controller="myCtrl as ctrl"  and then using ctrl.save()... woulde be same as calling save() that would
+        // be defined on the $scope variable.
         var self = this;
-        var originalData = {};
-        
-       
+
+        // initialize variables
         self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 12:00
-      
+        self.data = [];
+        self.attributesData = [];
+        self.attApiCount = 0;
+
+        // defining functions (attaching local functions to "this")
+        self.cancel = cancel;
+        self.del = del;
+        self.save = save;
+        self.reloadData = reloadData;
+        self.$localStorage = $localStorage;
+
+        if (!$localStorage.dataValidation) {
+            $localStorage.dataValidation = {};
+            $localStorage.dataValidation.elementPath = "\\afserver\database\element1";
+        }
+
 
 
         // call to get to the element
@@ -25,50 +45,102 @@
         // from this call, we can get all attributes of type contaminantes
         // and this is what we will use
         // https://optimus.osisoft.int/piwebapi/elements/E0dXWO5Pqh-0Wko7EhH85bdghBtYx8Ud5hGCzvAfrwJo-AT1BUSU1VU1xJQkVSRFJPTEFcSUJFUkRST0xBIEdFTkVSQUNJw5NOXENJQ0xPUyBDT01CSU5BRE9TXEFDRUNBXEdSVVBPIDJcQ0hJTUVORUEgMg/attributes?categoryName=contaminantes
-        
-/*        
-        var simpleList= [{
-                        name: "Pat",
-                        age: 50,
-                        money: 150
-                    }, {
-                        name: "Luc",
-                        age: 45,
-                        money: 99
-                    }, {
-                        name: "Cesar",
-                        age: 15,
-                        money: 10
-                    }, {
-                        name: "John",
-                        age: 35,
-                        money: 200
-                    }, {
-                        name: "Joe",
-                        age: 66,
-                        money: 300
-                    } ];
-            
-*/
 
 
-        self.cancel = cancel;
-        self.del = del;
-        self.save = save;
-        self.reloadData = reloadData;
+
 
         //////////
+
+
+        function getAttributes(response) {
+
+            var categoryFilter = $localStorage.dataValidation.attributeCategory;
+
+            var filter = "";
+            if (categoryFilter !== undefined)
+                filter = "?categoryName=" + categoryFilter;
+
+            return piWebApiHttpService.query(response.data.Links.Attributes + filter);
+        }
+
+        // retrieves the data for all the attributes
+        function getAttributesData(response) {
+
+            // get averages
+            //self.attributes = response.data.Items;
+            var attributes = response.data.Items;
+            self.attributesCount = attributes.length;
+            
+            var promises = [];
+
+            angular.forEach(attributes, function (attribute) {
+                
+                var deferred = $q.defer();
+
+                getHourlyAveragesFromAttribute(attribute).
+                then(function (data) {
+                    deferred.resolve(data);
+                }).catch(function (error) {
+                    deferred.reject();
+                });
+
+                promises.push(deferred);
+            });
+
+            return $q.all(promises);
+
+        }
+
+
+        function getHourlyAveragesFromAttribute(attribute) {
+
+            var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
+            console.log("%s gathering data from %s to %s", attribute.Name,moment(self.selectedTime).toISOString(), et.toISOString());
+
+            var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
+
+            console.log(encodeURI(HourlyAverages));
+            return piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function(response) {
+                self.attributesData.push(response);
+                self.attApiCount++;
+                if (self.attributesCount === self.attApiCount) {
+                    updateDataTableAndUI();
+                }
+
+            });
+        }
+
+        function updateDataTableAndUI(response) {
+            self.data = [];
+            var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
+
+            var attData = self.attributesData[1].data.Items;
+
+            angular.forEach(attData, function (object, key) {
+
+                var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
+                
+
+                var value = (isNaN(object.Value.Value)) ? object.Value.Value : formatter.format(object.Value.Value);
+                self.data.push({
+                    time: date.format('HH:mm'),
+                    //  time: object.Value.Timestamp,
+                    value: value,
+                    flag: 'T'
+                });
+            });
+
+            self.tableParams = new NgTableParams({ count: 24 }, {
+                filterDelay: 0,
+                data: angular.copy(self.data)
+            });
+        }
+
 
         function reloadData() {
 
             $scope.$parent.globals.loading++;
             console.log($scope.$parent.loading);
-
-            //configuration: {
-            //        url: 'https://server/piwebapi/',
-            //        authType: 'Kerberos',
-            //        user: '',
-            //        password: ''
 
             // it is not required to set the piWebAPIHttpService settings if there were set in the configuration already and iitialized.
             // however, if one enters the application with the direct url to this page, we need to initialize if.
@@ -78,63 +150,32 @@
             piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
-            // gets all the attributes
             piWebApiHttpService
-                .query('https://optimus.osisoft.int/piwebapi/elements/E0dXWO5Pqh-0Wko7EhH85bdghBtYx8Ud5hGCzvAfrwJo-AT1BUSU1VU1xJQkVSRFJPTEFcSUJFUkRST0xBIEdFTkVSQUNJw5NOXENJQ0xPUyBDT01CSU5BRE9TXEFDRUNBXEdSVVBPIDJcQ0hJTUVORUEgMg/attributes?categoryName=contaminantes')
-                .then(function (response) {
-                    self.attributes = response.data;
-
-                    // from the attributes, we can get our value/flag
-                    var attribute = response.data.Items[0];
-
-
-                    var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
-                    console.log("gathering data from %s to %s", moment(self.selectedTime).toISOString(), et.toISOString());
-
-                    var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
-
-                    console.log(encodeURI(HourlyAverages));
-                    piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function (response) {
-                        self.attribute1 = response.data;
-
-                        originalData = [];
-                        var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
-                        angular.forEach(response.data.Items, function (object, key) {
-
-                            var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
-                            var value= (isNaN(object.Value.Value)) ? object.Value.Value : formatter.format(object.Value.Value);
-                            originalData.push({
-                                time: date.format('HH:mm'),
-                                //  time: object.Value.Timestamp,
-                                value:value,
-                                flag: 'T'
-                            });
-                        });
-
-                        self.tableParams = new NgTableParams({ count: 24 }, {
-                            filterDelay: 0,
-                            data: angular.copy(originalData)
-                        });
-
-                    });
-
-
-                }).catch(function(err) {
-                    try {
-                        var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Message;
-                        errMessage += "\n  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i";
-                        $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
-                    }
-                    catch (err) {
-                        $scope.$parent.globals.alerts.push({
-                            type: 'danger',
-                            message: "There was an error with the PI WEB Call.  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
-                        });
-                    }
-                }).finally(function () {
+                .GetElementsByPath(encodeURI($localStorage.elementPath)) // get element
+                .then(getAttributes) // get attributes
+                .then(getAttributesData)
+                .catch(onError)
+                .finally(function () { // cleanup - this always executes
                     $scope.$parent.globals.loading--;
                     console.log($scope.$parent.globals.loading);
+                    
                 });
+
+
+        }
+
+        function onError(err) {
+            try {
+                var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Message;
+                errMessage += "\n  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i";
+                $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
+            }
+            catch (err) {
+                $scope.$parent.globals.alerts.push({
+                    type: 'danger',
+                    message: "There was an error with the PI WEB Call.  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
+                });
+            }
         }
 
         function cancel(row, rowForm) {
@@ -158,7 +199,7 @@
             row.isEditing = false;
             rowForm.$setPristine();
             self.tableTracker.untrack(row);
-            return _.findWhere(originalData, function (r) {
+            return _.findWhere(data, function (r) {
                 return r.id === row.id;
             });
         }
@@ -220,7 +261,7 @@
         }
 
         function getCellsForRow(row, cellsByRow) {
-            return _.find(cellsByRow, function(entry) {
+            return _.find(cellsByRow, function (entry) {
                 return entry.row === row;
             });
         }

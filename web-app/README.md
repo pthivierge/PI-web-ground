@@ -18,3 +18,7 @@ https://pisquare.osisoft.com
 UI Bootstrap
 Bootstrap components written in pure AngularJS by the AngularUI Team
 https://angular-ui.github.io/bootstrap/
+
+#todo
+make sure all libraries can be used offline.
+same for online with cdns.

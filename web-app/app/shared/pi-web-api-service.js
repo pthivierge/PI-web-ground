@@ -71,6 +71,10 @@ app.factory('piWebApiHttpService', ['$http', '$q', function($http, $q) {
     return $http.get(baseUrl + 'assetservers/' + assetServerWebId + '/assetdatabases');
   };
 
+  service.GetElementsByPath = function (path) {
+      return $http.get(baseUrl + 'elements?path=' + path);
+  };
+
   service.UserInfo = function() {
     return $http.get(baseUrl + 'system/userinfo')
   }

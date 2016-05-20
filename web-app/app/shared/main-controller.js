@@ -26,8 +26,6 @@
                     user: '',
                     password: ''
                 }
-
-
             });
 
             // $scope.globals contains variables that can also be updated or read by child controllers
