@@ -32,7 +32,7 @@
         self.reloadData = reloadData;
         self.$localStorage = $localStorage;
 
-        if (!$localStorage.dataValidation) {
+        if ($localStorage.dataValidation===undefined) {
             $localStorage.dataValidation = {};
             $localStorage.dataValidation.elementPath = "\\afserver\database\element1";
         }
@@ -151,7 +151,7 @@
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
             piWebApiHttpService
-                .GetElementsByPath(encodeURI($localStorage.elementPath)) // get element
+                .GetElementsByPath(encodeURI($localStorage.dataValidation.elementPath)) // get element
                 .then(getAttributes) // get attributes
                 .then(getAttributesData)
                 .catch(onError)
