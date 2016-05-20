@@ -2,13 +2,14 @@
 <nav style="margin-bottom: 0" class="navbar navbar-default" role="navigation">
     <div class="container">
         <div class="navbar-header">
-            <!--<button type="button" class="navbar-toggle" ng-init="navCollapsed = false"-->
-            <!--ng-click="navCollapsed = !navCollapsed">-->
-            <!--<span class="sr-only">Toggle navigation</span>-->
-            <!--<span class="icon-bar"></span>-->
-            <!--<span class="icon-bar"></span>-->
-            <!--<span class="icon-bar"></span>-->
-            <!--</button>-->
+            <!-- need to be fixed - nav does not collapse -->
+            <button type="button" class="navbar-toggle" ng-init="navCollapsed = false"
+                    ng-click="navCollapsed = !navCollapsed">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
             <span class="navbar-brand">PI Web API</span>
 
             <ul class="nav navbar-nav">
@@ -31,21 +32,21 @@
                         <li><a ng-click="$storage.currentPage='views/pi-data-archive.html'" href="#">Retrieve time series data</a></li>
                     </ul>
                 </li>-->
-
                 <!--Messages-->
-                <li role="presentation"><a ng-click="openMessages()" href="#">Messages <span class="badge">{{alerts.length}}</span></a></li>
+                <li role="presentation"><a ng-click="openMessages()" href="#">Messages <span class="badge">{{globals.alerts.length}}</span></a></li>
                 <!--Search-->
                 <li>
                     <div class="pull-right hidden-xs">
                         <form class="navbar-form navbar-right" role="search">
                             <div class="form-group">
-                                <input type="text" class="form-control" placeholder="PI Web API Search" />
+                                <input type="text" class="form-control" placeholder="PI Web API Search"/>
                             </div>
                             <button type="submit" class="btn btn-default">Submit</button>
                         </form>
                     </div>
                 </li>
-                <li><div ng-cloak ng-show="loading>0" style="position: absolute; left: 5em;top: 0.8em" class="loader">Loading...</div></li>
+                <li>
+                    <div ng-cloak ng-show="globals.loading>0" style="position: absolute; left: 5em; top: 0.8em" class="loader">Loading...</div></li>
             </ul>
         </div>
 

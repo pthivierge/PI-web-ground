@@ -1,6 +1,6 @@
-D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\server.dll
-D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\server.pdb
 D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\obj\Debug\web-app.csprojResolveAssemblyReference.cache
-D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\obj\Debug\server.dll
-D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\obj\Debug\server.pdb
-D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\server.dll.config
+D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\web-app.dll.config
+D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\web-app.dll
+D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\bin\web-app.pdb
+D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\obj\Debug\web-app.dll
+D:\CurDev\_Github-pthivierge\PI-web-ground\web-app\obj\Debug\web-app.pdb

@@ -454,7 +454,6 @@
     <Content Include="bower_components\ngstorage\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="app\components\home\" />
     <Folder Include="assets\img\" />
     <Folder Include="assets\js\" />
     <Folder Include="assets\libs\" />

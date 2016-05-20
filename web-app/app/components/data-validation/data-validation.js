@@ -1,20 +1,23 @@
 ﻿
 
 // demoController
+// dependencies:
+// moment.js
+//lodash.js
 (function () {
     "use strict";
     
     angular.module("app").controller("demoController", demoController);
-    demoController.$inject = ["$scope","NgTableParams", "piWebApiHttpService"];
+    demoController.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser"];
 
-    function demoController($scope,NgTableParams, piWebApiHttpService) {
+    function demoController($scope, NgTableParams, piWebApiHttpService, uibDateParser) {
         var self = this;
         var originalData = {};
+        
+       
+        self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 12:00
+      
 
-        var yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        self.startTime = yesterday;
-        self.endTime = new Date();
 
         // call to get to the element
         // "\\\\OPTIMUS\\Iberdrola\\Iberdrola Generación\\Ciclos Combinados\\Aceca\\Grupo 2\\Chimenea 2
@@ -23,11 +26,6 @@
         // and this is what we will use
         // https://optimus.osisoft.int/piwebapi/elements/E0dXWO5Pqh-0Wko7EhH85bdghBtYx8Ud5hGCzvAfrwJo-AT1BUSU1VU1xJQkVSRFJPTEFcSUJFUkRST0xBIEdFTkVSQUNJw5NOXENJQ0xPUyBDT01CSU5BRE9TXEFDRUNBXEdSVVBPIDJcQ0hJTUVORUEgMg/attributes?categoryName=contaminantes
         
-
-       
-
-        
-
 /*        
         var simpleList= [{
                         name: "Pat",
@@ -62,9 +60,23 @@
         //////////
 
         function reloadData() {
-            //get the data
-            piWebApiHttpService.SetAPIAuthentication('Kerberos', '', '');
-            piWebApiHttpService.SetPIWebAPIServiceUrl('https://optimus.osisoft.int/piwebapi/');
+
+            $scope.$parent.globals.loading++;
+            console.log($scope.$parent.loading);
+
+            //configuration: {
+            //        url: 'https://server/piwebapi/',
+            //        authType: 'Kerberos',
+            //        user: '',
+            //        password: ''
+
+            // it is not required to set the piWebAPIHttpService settings if there were set in the configuration already and iitialized.
+            // however, if one enters the application with the direct url to this page, we need to initialize if.
+            // in such situation the configuration stored in the localStorage is used
+            //
+            var conf = $scope.$parent.globals.configuration;
+            piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
+            piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
             // gets all the attributes
             piWebApiHttpService
@@ -75,18 +87,26 @@
                     // from the attributes, we can get our value/flag
                     var attribute = response.data.Items[0];
 
-                    var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + self.startTime.toISOString() + '&endTime=' + self.endTime.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
+
+                    var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
+                    console.log("gathering data from %s to %s", moment(self.selectedTime).toISOString(), et.toISOString());
+
+                    var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
+
+                    console.log(encodeURI(HourlyAverages));
                     piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function (response) {
                         self.attribute1 = response.data;
 
                         originalData = [];
+                        var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
                         angular.forEach(response.data.Items, function (object, key) {
 
-
+                            var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
+                            var value= (isNaN(object.Value.Value)) ? object.Value.Value : formatter.format(object.Value.Value);
                             originalData.push({
-                                time: object.Value.Timestamp.substr(11, 5),
+                                time: date.format('HH:mm'),
                                 //  time: object.Value.Timestamp,
-                                value: object.Value.Value,
+                                value:value,
                                 flag: 'T'
                             });
                         });
@@ -99,6 +119,21 @@
                     });
 
 
+                }).catch(function(err) {
+                    try {
+                        var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Message;
+                        errMessage += "\n  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i";
+                        $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
+                    }
+                    catch (err) {
+                        $scope.$parent.globals.alerts.push({
+                            type: 'danger',
+                            message: "There was an error with the PI WEB Call.  Make sure the configuration is correct and initialized or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
+                        });
+                    }
+                }).finally(function () {
+                    $scope.$parent.globals.loading--;
+                    console.log($scope.$parent.globals.loading);
                 });
         }
 

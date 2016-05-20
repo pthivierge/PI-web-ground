@@ -11,7 +11,7 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
         $scope.assetServer = {};
         $scope.dataServer = {};
         $scope.configuration = $localStorage.configuration;
-        $scope.userInfo = $localStorage.userInfo;
+        $scope.userInfo = $scope.$parent.globals.userInfo;
 
     }
 
@@ -20,7 +20,7 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
 
         console.log("Trying connection ... ");
 
-        $scope.loading++;
+        $scope.$parent.globals.loading++;
         $scope.alerts.length = 0;
 
         piWebApiHttpService.SetAPIAuthentication($scope.configuration.authType, $scope.configuration.user, $scope.configuration.password);
@@ -30,14 +30,14 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
             .then(onSuccess)
             .catch(onError)
             .finally(function () {
-                $scope.loading--;
+                $scope.$parent.globals.loading--;
             });
 
 
         function onSuccess(response) {
-            $scope.connectionSuccess = true;
-            $localStorage.userInfo = response.data;
-            $scope.$parent.alerts.push({
+            $scope.$parent.globals.connectionSuccess = true;
+            $scope.$parent.globals.userInfo = response.data;
+            $scope.$parent.globals.alerts.push({
                 type: 'success', message: "Connection succeeded. (the call to /system/userinfo returned 200 OK) "
             });
 
@@ -45,16 +45,15 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
         }
 
         function onError(err) {
-            $scope.connectionSuccess = false;
-            $localStorage.userInfo = {};
-            $scope.userInfo = {};
+            $scope.$parent.globals.connectionSuccess = false;
+            $scope.$parent.globals.userInfo = {};
 
             try {
                 var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Message;
-                $scope.alerts.push({type: 'danger', message: errMessage});
+                $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
             }
             catch (err) {
-                $scope.$parent.alerts.push({
+                $scope.$parent.globals.alerts.push({
                     type: 'danger',
                     message: "There was an error with the PI WEB Call.  Make sure the address is correct or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
                 });
