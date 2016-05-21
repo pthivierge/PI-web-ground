@@ -53,10 +53,15 @@ app.controller('connectionCtrl', function ($scope, $localStorage, $sessionStorag
                 $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
             }
             catch (err) {
+
+                var errMessage = "There was an error with the PI WEB Call.  Make sure the address is correct or that the service is running. ";
+                errMessage += "It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i.  ";
+                errMessage += " Make sure to test the PI Web API Url e.g. https://server/piwebapi in a browser, you may need to accept the unsafe warning if you have an self-generated certificate.";
+
                 $scope.$parent.globals.alerts.push({
                     type: 'danger',
-                    message: "There was an error with the PI WEB Call.  Make sure the address is correct or that the service is running.  It may also be useful to look in the browser developer tools console and check for complete error messages. F12 or Ctrl+Shift+i"
-                });
+                    message: errMessage
+            });
             }
 
 

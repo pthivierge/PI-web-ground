@@ -69,6 +69,8 @@
     <Content Include="app\components\data-validation\data-validation.js" />
     <Content Include="app\components\pi-data-archive\pi-data-archive.html" />
     <Content Include="app\components\pi-data-archive\pi-data-archive.js" />
+    <Content Include="app\components\search\searchCtrl.js" />
+    <Content Include="app\components\search\searchResults.html" />
     <Content Include="app\shared\NotImplemented.html" />
     <Content Include="app\shared\topnav\messages-controller.js" />
     <Content Include="app\shared\main-controller.js" />
