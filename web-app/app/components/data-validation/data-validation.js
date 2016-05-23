@@ -7,12 +7,12 @@
 (function () {
     "use strict";
 
-    angular.module("app").controller("demoController", demoController);
-    demoController.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage","$q"];
+    angular.module("app").controller("dataValidationCtrl", dataValidationCtrl);
+    dataValidationCtrl.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage", "$q"];
 
 
 
-    function demoController($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage,$q) {
+    function dataValidationCtrl($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage, $q) {
 
         // this controller is making use of "this" instead of $scope.  this is another style with angularJS, it works almost same as $scope as long as 
         // the controller in the html is declared like : ng-controller="myCtrl as ctrl"  and then using ctrl.save()... woulde be same as calling save() that would
@@ -20,19 +20,41 @@
         var self = this;
 
         // initialize variables
-        self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 12:00
+        self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 00:00
         self.data = [];
-        self.attributesData = [];
+        self.attributes = []; // contains attributes objects
+        self.attributesData = []; // contains hourly averages coming from each attribute.
+
         self.attApiCount = 0;
+        self.dataEntryFlags = ["V", "O", "T", "R", "D", "C", "F", "N", "A", "P", "M", "Z"];
+
+        var originalData = [];
+
+
+
+        // table settings
+        self.tableParams = new NgTableParams({ count: 24 }, {
+            filterDelay: 0,
+            data: self.data
+
+            //getData: function($defer, params) {
+            //    console.log("table: refresh data");
+            //    return self.data;
+            //    // params.total(data.length);
+            //    // $defer.resolve(data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            //    //$defer.resolve($scope.dataset.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+            //}
+        });
 
         // defining functions (attaching local functions to "this")
         self.cancel = cancel;
         self.del = del;
         self.save = save;
-        self.reloadData = reloadData;
+        self.reloadData = getData;
+        self.reloadAttributes = loadAttributes;
         self.$localStorage = $localStorage;
 
-        if ($localStorage.dataValidation===undefined) {
+        if ($localStorage.dataValidation === undefined) {
             $localStorage.dataValidation = {};
             $localStorage.dataValidation.elementPath = "\\afserver\database\element1";
         }
@@ -57,24 +79,22 @@
             var categoryFilter = $localStorage.dataValidation.attributeCategory;
 
             var filter = "";
-            if (categoryFilter !== undefined)
+            if (categoryFilter !== undefined && categoryFilter !== '')
                 filter = "?categoryName=" + categoryFilter;
+
+            console.log("Getting attributes:", response.data.Links.Attributes + filter);
 
             return piWebApiHttpService.query(response.data.Links.Attributes + filter);
         }
 
         // retrieves the data for all the attributes
-        function getAttributesData(response) {
+        function getAttributesData() {
 
-            // get averages
-            //self.attributes = response.data.Items;
-            var attributes = response.data.Items;
-            self.attributesCount = attributes.length;
-            
+            self.attributesData.length = 0;
             var promises = [];
 
-            angular.forEach(attributes, function (attribute) {
-                
+            angular.forEach(self.attributes, function (attribute) {
+
                 var deferred = $q.defer();
 
                 getHourlyAveragesFromAttribute(attribute).
@@ -95,50 +115,74 @@
         function getHourlyAveragesFromAttribute(attribute) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
-            console.log("%s gathering data from %s to %s", attribute.Name,moment(self.selectedTime).toISOString(), et.toISOString());
+            console.log("%s gathering data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
 
             var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
 
             console.log(encodeURI(HourlyAverages));
-            return piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function(response) {
+            return piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function (response) {
+                response.Name = attribute.Name;
                 self.attributesData.push(response);
                 self.attApiCount++;
                 if (self.attributesCount === self.attApiCount) {
                     updateDataTableAndUI();
+                    self.attApiCount = 0;
                 }
 
             });
         }
 
         function updateDataTableAndUI(response) {
-            self.data = [];
+
+
+            self.data.length = 0; // empties the data array
+
+
             var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
 
-            var attData = self.attributesData[1].data.Items;
+            if (self.selectedAttribute === undefined) {
+                console.log("no attribute selected.  Cannot update data table");
+                return;
+            }
 
+            var attData = {};
+            for (var j = 0; j < self.attributesData.length; j++) {
+                if (self.attributesData[j].Name === self.selectedAttribute) {
+                    attData = self.attributesData[j].data.Items;
+                    console.log(attData);
+                    break;
+                }
+
+
+                //  console.log("no attribute was found with this name");
+            }
+
+
+
+            // updates table data
             angular.forEach(attData, function (object, key) {
 
                 var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
-                
+
 
                 var value = (isNaN(object.Value.Value)) ? object.Value.Value : formatter.format(object.Value.Value);
                 self.data.push({
                     time: date.format('HH:mm'),
                     //  time: object.Value.Timestamp,
                     value: value,
-                    flag: 'T'
+                    //                    flag: 'T'
                 });
             });
 
-            self.tableParams = new NgTableParams({ count: 24 }, {
-                filterDelay: 0,
-                data: angular.copy(self.data)
-            });
+            originalData.length = 0;
+            originalData = angular.copy(self.data);
+            self.tableParams.total(self.data.length);
+            self.tableParams.reload();
+
+
         }
 
-
-        function reloadData() {
-
+        function init() {
             $scope.$parent.globals.loading++;
             console.log($scope.$parent.loading);
 
@@ -150,15 +194,44 @@
             piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
+            loadAttributes();
+        }
+
+
+        function loadAttributes() {
+
+            console.log("Loading attributes");
+
+            self.attributes.length = 0;
+            
             piWebApiHttpService
-                .GetElementsByPath(encodeURI($localStorage.dataValidation.elementPath)) // get element
-                .then(getAttributes) // get attributes
-                .then(getAttributesData)
+              .GetElementsByPath(encodeURI($localStorage.dataValidation.elementPath)) // get element
+              .then(getAttributes) // get attributes
+              .then(function (response) {
+                  self.attributes = response.data.Items;
+                  self.attributesCount = self.attributes.length;
+                  self.selectedAttribute = self.attributes[0].Name;
+              })
+              .catch(onError)
+              .finally(function () { // cleanup - this always executes
+                  $scope.$parent.globals.loading--;
+                  console.log($scope.$parent.globals.loading);
+
+              });
+        }
+
+
+        function getData() {
+
+            $scope.$parent.globals.loading++;
+            console.log($scope.$parent.loading);
+
+            getAttributesData()
                 .catch(onError)
                 .finally(function () { // cleanup - this always executes
                     $scope.$parent.globals.loading--;
                     console.log($scope.$parent.globals.loading);
-                    
+
                 });
 
 
@@ -199,7 +272,7 @@
             row.isEditing = false;
             rowForm.$setPristine();
             self.tableTracker.untrack(row);
-            return _.findWhere(data, function (r) {
+            return _.findWhere(originalData, function (r) {
                 return r.id === row.id;
             });
         }
@@ -209,7 +282,7 @@
             angular.extend(originalRow, row);
         }
 
-        reloadData();
+        init();
     }
 })();
 
@@ -423,4 +496,5 @@
         });
     }
 })();
+
 

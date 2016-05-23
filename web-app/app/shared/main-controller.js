@@ -54,7 +54,7 @@
         $scope.openMessages = function () {
 
             var modalInstance = $uibModal.open({
-                animation: $scope.animationsEnabled,
+                animation: true,
                 templateUrl: '/app/shared/topnav/messages.html',
                 controller: 'messagesCtrl',
                 //  size: size,
