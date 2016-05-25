@@ -17,7 +17,16 @@
 
 <div ng-controller="connectionCtrl" class="container">
 
-
+    <div class="row">
+        <div class="col-md-6">
+           
+        </div>
+        <div class="col-md-6">
+            <div class="text-center">
+                <p class="labed text-success" ng-show="$parent.globals.connectionSuccess">Connection initialized</p>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-6">
             <!-- URL -->
@@ -27,12 +36,14 @@
                     <label>Enter the PI Web API URL here:</label>
                     <div class="input-group">
                         <input ng-model="configuration.url" class="form-control alert alert-{{$parent.globals.connectionSuccess?'success':'danger'}}" type="url"
-                               placeholder="Enter PI Web API url" />
+                               placeholder="Enter PI Web API url"/>
                         <span class="input-group-addon"><i class="glyphicon glyphicon-home"></i></span>
+                    </div>
+                    <div class="text-center">
+                        <btn style="margin: 5px" ng-click="connect()" class="btn btn-primary">Initialize Connection</btn>
                     </div>
                 </div>
             </div>
-
 
             <!-- Basic Auth. User and Password -->
             <div class="panel panel-primary">
@@ -56,21 +67,29 @@
                     </label>
                 </div>
             </div>
+
         </div>
+
         <div class="col-md-6">
-           
-                <div class="panel panel-primary">
-                    <div class="panel-heading"><b>Connection User Information</b></div>
-                    <table class="table table-striped">
-                        <tr ng-repeat="(key, value) in $parent.globals.userInfo">
-                            <td><b>{{key}}</b></td>
-                            <td>{{value}}</td>
-                        </tr>
-                    </table>
 
-                </div>
+            <div class="panel panel-primary">
+                <div class="panel-heading"><b>Connection User Information</b></div>
+                <table class="table table-striped">
+                    <tr ng-repeat="(key, value) in $parent.globals.userInfo">
+                        <td><b>{{key}}</b></td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
 
-          
+            </div>
+
+
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+
         </div>
     </div>
 
@@ -78,11 +97,7 @@
 
 
 
-    <div class="text-center">
-        <btn ng-click="connect()" class="btn btn-primary">Initialize Connection</btn>
-        <br/>
-        <p class="labed text-success" ng-show="$parent.globals.connectionSuccess">Connection initialized</p>
-    </div>
+    
 </div>
 
 

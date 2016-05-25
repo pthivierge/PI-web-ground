@@ -1,6 +1,4 @@
-﻿
-
-// demoController
+﻿// demoController
 // dependencies:
 // moment.js
 //lodash.js
@@ -22,6 +20,8 @@
         // initialize variables
         self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 00:00
         self.data = [];
+
+        self.selectedAttributes = [];
         self.attributes = []; // contains attributes objects
         self.attributesData = []; // contains hourly averages coming from each attribute.
 
@@ -36,14 +36,6 @@
         self.tableParams = new NgTableParams({ count: 24 }, {
             filterDelay: 0,
             data: self.data
-
-            //getData: function($defer, params) {
-            //    console.log("table: refresh data");
-            //    return self.data;
-            //    // params.total(data.length);
-            //    // $defer.resolve(data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
-            //    //$defer.resolve($scope.dataset.slice((params.page() - 1) * params.count(), params.page() * params.count()));
-            //}
         });
 
         // defining functions (attaching local functions to "this")
@@ -80,7 +72,7 @@
 
             var filter = "";
             if (categoryFilter !== undefined && categoryFilter !== '')
-                filter = "?categoryName=" + categoryFilter;
+                filter = "?searchFullHierarchy=true&categoryName=" + categoryFilter;
 
             console.log("Getting attributes:", response.data.Links.Attributes + filter);
 
@@ -93,7 +85,16 @@
             self.attributesData.length = 0;
             var promises = [];
 
-            angular.forEach(self.attributes, function (attribute) {
+            if (self.selectedAttributes.length < 0) {
+                console.log("no attribute selected.  Cannot update data table");
+                $scope.$parent.globals.alerts.push({
+                    type: 'warning',
+                    message: "There was no attribute selected, thus no data will be queried."
+                });
+                return;
+            }
+
+            angular.forEach(self.selectedAttributes, function (attribute) {
 
                 var deferred = $q.defer();
 
@@ -140,14 +141,14 @@
 
             var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
 
-            if (self.selectedAttribute === undefined) {
+            if (self.selectedAttributes.length<0) {
                 console.log("no attribute selected.  Cannot update data table");
                 return;
             }
 
             var attData = {};
             for (var j = 0; j < self.attributesData.length; j++) {
-                if (self.attributesData[j].Name === self.selectedAttribute) {
+                if (self.attributesData[j].Name === self.selectedAttributes) {
                     attData = self.attributesData[j].data.Items;
                     console.log(attData);
                     break;
@@ -198,6 +199,22 @@
         }
 
 
+        //function toggleSelectedAttribute=function() {
+        //    // toggle selection for a given fruit by name
+        //    $scope.toggleSelection = function toggleSelection(fruitName) {
+        //        var idx = $scope.selection.indexOf(fruitName);
+
+        //        // is currently selected
+        //        if (idx > -1) {
+        //            $scope.selection.splice(idx, 1);
+        //        }
+
+        //            // is newly selected
+        //        else {
+        //            $scope.selection.push(fruitName);
+        //        }
+        //}
+
         function loadAttributes() {
 
             console.log("Loading attributes");
@@ -210,7 +227,7 @@
               .then(function (response) {
                   self.attributes = response.data.Items;
                   self.attributesCount = self.attributes.length;
-                  self.selectedAttribute = self.attributes[0].Name;
+                  self.selectedAttributes.push(self.attributes[0]);
               })
               .catch(onError)
               .finally(function () { // cleanup - this always executes
@@ -227,7 +244,7 @@
             console.log($scope.$parent.loading);
 
             getAttributesData()
-                .catch(onError)
+                .catch(onError) 
                 .finally(function () { // cleanup - this always executes
                     $scope.$parent.globals.loading--;
                     console.log($scope.$parent.globals.loading);
@@ -294,22 +311,22 @@
 */
 // directive TrackedTable
 (function () {
-    angular.module("app").directive("demoTrackedTable", demoTrackedTable);
+    angular.module("app").directive("trackedTable", trackedTable);
 
-    demoTrackedTable.$inject = [];
+    trackedTable.$inject = [];
 
-    function demoTrackedTable() {
+    function trackedTable() {
         return {
             restrict: "A",
             priority: -1,
             require: "ngForm",
-            controller: demoTrackedTableController
+            controller: trackedTableController
         };
     }
 
-    demoTrackedTableController.$inject = ["$scope", "$parse", "$attrs", "$element"];
+    trackedTableController.$inject = ["$scope", "$parse", "$attrs", "$element"];
 
-    function demoTrackedTableController($scope, $parse, $attrs, $element) {
+    function trackedTableController($scope, $parse, $attrs, $element) {
         var self = this;
         var tableForm = $element.controller("form");
         var dirtyCellsByRow = [];
@@ -320,7 +337,7 @@
         ////////
 
         function init() {
-            var setter = $parse($attrs.demoTrackedTable).assign;
+            var setter = $parse($attrs.trackedTable).assign;
             setter($scope, self);
             $scope.$on("$destroy", function () {
                 setter(null);
@@ -407,26 +424,26 @@
 
 // directive TrackedTableRow
 (function () {
-    angular.module("app").directive("demoTrackedTableRow", demoTrackedTableRow);
+    angular.module("app").directive("trackedTableRow", trackedTableRow);
 
-    demoTrackedTableRow.$inject = [];
+    trackedTableRow.$inject = [];
 
-    function demoTrackedTableRow() {
+    function trackedTableRow() {
         return {
             restrict: "A",
             priority: -1,
-            require: ["^demoTrackedTable", "ngForm"],
-            controller: demoTrackedTableRowController
+            require: ["trackedTable", "ngForm"],
+            controller: trackedTableRowController
         };
     }
 
-    demoTrackedTableRowController.$inject = ["$attrs", "$element", "$parse", "$scope"];
+    trackedTableRowController.$inject = ["$attrs", "$element", "$parse", "$scope"];
 
-    function demoTrackedTableRowController($attrs, $element, $parse, $scope) {
+    function trackedTableRowController($attrs, $element, $parse, $scope) {
         var self = this;
-        var row = $parse($attrs.demoTrackedTableRow)($scope);
+        var row = $parse($attrs.trackedTableRow)($scope);
         var rowFormCtrl = $element.controller("form");
-        var trackedTableCtrl = $element.controller("demoTrackedTable");
+        var trackedTableCtrl = $element.controller("trackedTable");
 
         self.isCellDirty = isCellDirty;
         self.setCellDirty = setCellDirty;
@@ -449,27 +466,27 @@
 
 // directive TrackedTableCell
 (function () {
-    angular.module("app").directive("demoTrackedTableCell", demoTrackedTableCell);
+    angular.module("app").directive("trackedTableCell", trackedTableCell);
 
-    demoTrackedTableCell.$inject = [];
+    trackedTableCell.$inject = [];
 
-    function demoTrackedTableCell() {
+    function trackedTableCell() {
         return {
             restrict: "A",
             priority: -1,
             scope: true,
-            require: ["^demoTrackedTableRow", "ngForm"],
-            controller: demoTrackedTableCellController
+            require: ["trackedTableRow", "ngForm"],
+            controller: trackedTableCellController
         };
     }
 
-    demoTrackedTableCellController.$inject = ["$attrs", "$element", "$scope"];
+    trackedTableCellController.$inject = ["$attrs", "$element", "$scope"];
 
-    function demoTrackedTableCellController($attrs, $element, $scope) {
+    function trackedTableCellController($attrs, $element, $scope) {
         var self = this;
         var cellFormCtrl = $element.controller("form");
         var cellName = cellFormCtrl.$name;
-        var trackedTableRowCtrl = $element.controller("demoTrackedTableRow");
+        var trackedTableRowCtrl = $element.controller("trackedTableRow");
 
         if (trackedTableRowCtrl.isCellDirty(cellName)) {
             cellFormCtrl.$setDirty();

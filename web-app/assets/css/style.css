@@ -5,10 +5,21 @@
 }
 
 
+/* Panels present in data validation*/
+.panel-heading a:after {
+    font-family:'Glyphicons Halflings';
+    content:"\e080";
+    float: right;
+    color: grey;
+}
+.panel-heading a.collapsed:after {
+  
+    content:"\e114";
+}
+
+
 /* UI bootstrap styles */
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
-
-
 
 
 .section-header{
@@ -42,74 +53,3 @@
 
 }
 
-
-
-/*
-lukehaas
-https://github.com/lukehaas/css-loaders
-MIT License (MIT)
-*/
-.loader:before,
-.loader:after,
-.loader {
-
-  border-radius: 50%;
-  width: 2.5em;
-  height: 2.5em;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-  -webkit-animation: load7 1.8s infinite ease-in-out;
-  animation: load7 1.8s infinite ease-in-out;
-  z-index: 999;
-}
-.loader {
-  float: right;
-  font-size: 5px;
-  z-index: 999;
-  margin-right: 4em;
- /* position: relative; */
-  text-indent: -9999em;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
-  animation-delay: -0.16s;
-}
-.loader:before {
-  left: -3.5em;
-  -webkit-animation-delay: -0.32s;
-  animation-delay: -0.32s;
-}
-.loader:after {
-  left: 3.5em;
-}
-.loader:before,
-.loader:after {
-  content: '';
-  position: absolute;
-  top: 0;
-}
-@-webkit-keyframes load7 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 2.5em 0 -1.3em #286090;
-  }
-  40% {
-    box-shadow: 0 2.5em 0 0 #286090;
-  }
-
-}
-@keyframes load7 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 2.5em 0 -1.3em #286090;
-  }
-  40% {
-    box-shadow: 0 2.5em 0 0 #286090;
-  }
-}
-
-
-/***/

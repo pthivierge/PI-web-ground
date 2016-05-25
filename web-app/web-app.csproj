@@ -79,6 +79,7 @@
     <Content Include="app\shared\topnav\nav.html" />
     <Content Include="app\viewTemplate.html" />
     <Content Include="assets\css\style.css" />
+    <Content Include="assets\img\ring-alt.gif" />
     <Content Include="bower_components\angular-aside\demo.html" />
     <Content Include="bower_components\angular-aside\dist\css\angular-aside.css" />
     <Content Include="bower_components\angular-aside\dist\css\angular-aside.min.css" />
@@ -456,7 +457,6 @@
     <Content Include="bower_components\ngstorage\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="assets\img\" />
     <Folder Include="assets\js\" />
     <Folder Include="assets\libs\" />
   </ItemGroup>
@@ -506,6 +506,7 @@
     <Content Include="bower_components\ng-table\README.md" />
     <Content Include="bower_components\ng-table\RELEASING.md" />
     <Content Include="bower_components\ng-table\test\.jsbeautifyrc" />
+    <Content Include="web-app.licenseheader" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
