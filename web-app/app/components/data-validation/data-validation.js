@@ -8,8 +8,6 @@
     angular.module("app").controller("dataValidationCtrl", dataValidationCtrl);
     dataValidationCtrl.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage", "$q"];
 
-
-
     function dataValidationCtrl($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage, $q) {
 
         // this controller is making use of "this" instead of $scope.  this is another style with angularJS, it works almost same as $scope as long as 
@@ -21,12 +19,12 @@
         self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 00:00
         self.data = [];
 
-        self.selectedAttributes = [];
-        self.attributes = []; // contains attributes objects
-        self.attributesData = []; // contains hourly averages coming from each attribute.
+        self.selectedAttributes = [];   // selected attributes, driven by the checkboxes
+        self.attributes = [];           // contains attributes objects
+        self.attributesData = [];       // contains hourly averages coming from each attribute.
 
-        self.attApiCount = 0;
-        self.dataEntryFlags = ["V", "O", "T", "R", "D", "C", "F", "N", "A", "P", "M", "Z"];
+        self.attApiCount = 0;           // obsolete? tbd , keeps the number of attributes loaded 
+        self.dataEntryFlags = ["V", "O", "T", "R", "D", "C", "F", "N", "A", "P", "M", "Z"]; // this could be replaced with a call to get DS
 
         var originalData = [];
 
@@ -52,20 +50,6 @@
         }
 
 
-
-        // call to get to the element
-        // "\\\\OPTIMUS\\Iberdrola\\Iberdrola Generación\\Ciclos Combinados\\Aceca\\Grupo 2\\Chimenea 2
-        // https://optimus.osisoft.int/piwebapi/elements?path=\\OPTIMUS\Iberdrola\Iberdrola%20Generaci%C3%B3n\Ciclos%20Combinados\Aceca\Grupo%202\Chimenea%202
-        // from this call, we can get all attributes of type contaminantes
-        // and this is what we will use
-        // https://optimus.osisoft.int/piwebapi/elements/E0dXWO5Pqh-0Wko7EhH85bdghBtYx8Ud5hGCzvAfrwJo-AT1BUSU1VU1xJQkVSRFJPTEFcSUJFUkRST0xBIEdFTkVSQUNJw5NOXENJQ0xPUyBDT01CSU5BRE9TXEFDRUNBXEdSVVBPIDJcQ0hJTUVORUEgMg/attributes?categoryName=contaminantes
-
-
-
-
-        //////////
-
-
         function getAttributes(response) {
 
             var categoryFilter = $localStorage.dataValidation.attributeCategory;
@@ -79,11 +63,16 @@
             return piWebApiHttpService.query(response.data.Links.Attributes + filter);
         }
 
+        function endsWith(str, suffix) {
+            return str.indexOf(suffix, str.length - suffix.length) !== -1;
+        }
+
         // retrieves the data for all the attributes
         function getAttributesData() {
 
             self.attributesData.length = 0;
             var promises = [];
+
 
             if (self.selectedAttributes.length < 0) {
                 console.log("no attribute selected.  Cannot update data table");
@@ -94,16 +83,32 @@
                 return;
             }
 
-            angular.forEach(self.selectedAttributes, function (attribute) {
+            // get all selected attributes: 
+            var selectedAttr = Enumerable.From(self.attributes).Where("$.selected===true").ToArray();;
+
+            self.attributesCount = selectedAttr.length;
+
+            angular.forEach(selectedAttr, function (attribute) {
 
                 var deferred = $q.defer();
 
-                getHourlyAveragesFromAttribute(attribute).
-                then(function (data) {
-                    deferred.resolve(data);
-                }).catch(function (error) {
-                    deferred.reject();
-                });
+                if (endsWith(attribute.Name, "_Flag")) {
+                    getInterpolated(attribute)
+                       .then(function (data) {
+                           deferred.resolve(data);
+                       }).catch(function (error) {
+                           deferred.reject();
+                       });
+                }
+                else {
+                    getHourlyAverage(attribute)
+                        .then(function (data) {
+                            deferred.resolve(data);
+                        }).catch(function (error) {
+                            deferred.reject();
+                        });
+                }
+
 
                 promises.push(deferred);
             });
@@ -112,8 +117,28 @@
 
         }
 
+        function getInterpolated(attribute) {
 
-        function getHourlyAveragesFromAttribute(attribute) {
+            var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
+            console.log("%s gathering interpolated data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
+
+            var interpolatedData = attribute.Links.InterpolatedData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&interval=60m';
+
+            console.log(encodeURI(interpolatedData));
+            return piWebApiHttpService.query(encodeURI(interpolatedData)).then(function (response) {
+                response.Name = attribute.Name;
+                self.attributesData.push(response);
+                self.attApiCount++;
+                if (self.attributesCount === self.attApiCount) {
+                    updateDataTableAndUI();
+                    self.attApiCount = 0;
+                }
+
+            });
+        }
+
+
+        function getHourlyAverage(attribute) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
             console.log("%s gathering data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
@@ -133,46 +158,46 @@
             });
         }
 
-        function updateDataTableAndUI(response) {
+        // Updates the data table
+        function updateDataTableAndUI() {
 
-
+            console.log("updating table");
             self.data.length = 0; // empties the data array
 
 
             var formatter = new Intl.NumberFormat("en-US", { style: "decimal", maximumFractionDigits: 2 });
 
-            if (self.selectedAttributes.length<0) {
+            if (self.selectedAttributes.length < 0) {
                 console.log("no attribute selected.  Cannot update data table");
                 return;
             }
 
-            var attData = {};
-            for (var j = 0; j < self.attributesData.length; j++) {
-                if (self.attributesData[j].Name === self.selectedAttributes) {
-                    attData = self.attributesData[j].data.Items;
-                    console.log(attData);
-                    break;
-                }
 
+            var attributeData = {};
+            // getting the first attribute data
+            attributeData = self.attributesData[0].data.Items;
 
-                //  console.log("no attribute was found with this name");
-            }
+            // goes over each timestamp on the dataset
+            var index = 0;
+            angular.forEach(attributeData, function (object, key) {
 
-
-
-            // updates table data
-            angular.forEach(attData, function (object, key) {
+                var row = {}
 
                 var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
+                row.time = date.format('HH:mm');
 
+                for (var j = 0; j < self.attributesData.length; j++) {
+                    var rawVal = self.attributesData[j].data.Items[index];
+                    var value = "";
+                    if (rawVal.Value.IsSystem === true)
+                        value = rawVal.Value.Name;
+                    else
+                        value = (isNaN(rawVal.Value.Value)) ? rawVal.Value.Value : formatter.format(rawVal.Value.Value);
 
-                var value = (isNaN(object.Value.Value)) ? object.Value.Value : formatter.format(object.Value.Value);
-                self.data.push({
-                    time: date.format('HH:mm'),
-                    //  time: object.Value.Timestamp,
-                    value: value,
-                    //                    flag: 'T'
-                });
+                    row[self.attributesData[j].Name] = value;
+                }
+
+                self.data.push(row);
             });
 
             originalData.length = 0;
@@ -220,7 +245,7 @@
             console.log("Loading attributes");
 
             self.attributes.length = 0;
-            
+
             piWebApiHttpService
               .GetElementsByPath(encodeURI($localStorage.dataValidation.elementPath)) // get element
               .then(getAttributes) // get attributes
@@ -244,7 +269,7 @@
             console.log($scope.$parent.loading);
 
             getAttributesData()
-                .catch(onError) 
+                .catch(onError)
                 .finally(function () { // cleanup - this always executes
                     $scope.$parent.globals.loading--;
                     console.log($scope.$parent.globals.loading);

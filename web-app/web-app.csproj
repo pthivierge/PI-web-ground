@@ -97,6 +97,10 @@
     <Content Include="bower_components\angular-bootstrap\ui-bootstrap-tpls.min.js" />
     <Content Include="bower_components\angular-bootstrap\ui-bootstrap.js" />
     <Content Include="bower_components\angular-bootstrap\ui-bootstrap.min.js" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.css" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.js" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.css" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.js" />
     <Content Include="bower_components\angular-route\angular-route.js" />
     <Content Include="bower_components\angular-route\angular-route.min.js" />
     <Content Include="bower_components\angular-route\index.js" />
@@ -131,6 +135,7 @@
     <Content Include="bower_components\bootstrap\js\tooltip.js" />
     <Content Include="bower_components\bootstrap\js\transition.js" />
     <Content Include="bower_components\bootstrap\package.js" />
+    <Content Include="bower_components\Chart.js\Chart.js" />
     <Content Include="bower_components\jquery\AUTHORS.txt" />
     <Content Include="bower_components\jquery\dist\jquery.js" />
     <Content Include="bower_components\jquery\dist\jquery.min.js" />
@@ -457,10 +462,13 @@
     <Content Include="bower_components\ngstorage\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="assets\js\" />
     <Folder Include="assets\libs\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="packages.config" />
+    <None Include="assets\js\linq-vsdoc.js" />
+    <Content Include="assets\js\linq.js" />
+    <Content Include="assets\js\linq.min.js" />
     <Content Include="web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -507,6 +515,11 @@
     <Content Include="bower_components\ng-table\RELEASING.md" />
     <Content Include="bower_components\ng-table\test\.jsbeautifyrc" />
     <Content Include="web-app.licenseheader" />
+    <Content Include="bower_components\Chart.js\.bower.json" />
+    <Content Include="bower_components\Chart.js\bower.json" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.js.tar.gz" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.css.map" />
+    <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.js.map" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
