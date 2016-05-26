@@ -6,9 +6,9 @@
     "use strict";
 
     angular.module("app").controller("dataValidationCtrl", dataValidationCtrl);
-    dataValidationCtrl.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage", "$q"];
+    dataValidationCtrl.$inject = ["$scope", "NgTableParams", "piWebApiHttpService", "uibDateParser", "$localStorage", "$q", "$uibModal"];
 
-    function dataValidationCtrl($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage, $q) {
+    function dataValidationCtrl($scope, NgTableParams, piWebApiHttpService, uibDateParser, $localStorage, $q, $uibModal) {
 
         // this controller is making use of "this" instead of $scope.  this is another style with angularJS, it works almost same as $scope as long as 
         // the controller in the html is declared like : ng-controller="myCtrl as ctrl"  and then using ctrl.save()... woulde be same as calling save() that would
@@ -27,11 +27,8 @@
         self.data = [];
 
 
-        self.selectedAttributes = [];   // selected attributes, driven by the checkboxes
-
-
-        
-        self.attributes = $scope.$storage.attributes;           // contains attributes objects
+        self.selectedAttributes = [];                   // selected attributes, driven by the checkboxes
+        self.attributes = $scope.$storage.attributes;  // contains attributes objects, attributes are stored in local storage to avoid making the attribute call every time.
 
 
 
@@ -432,13 +429,18 @@
 
 
                 console.log("Writing changes for %s : %s, %s",webId,timeStamp,value);
-                piWebApiHttpService.writeValue(webId, timeStamp, value);
+                piWebApiHttpService.writeValue(webId, timeStamp, value)
+                    .catch(function (err) {
+                        var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Errors.toString();
+                        $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
+                    });
 
 
             }
-
-
+            
             self.editedValues.length = 0;
+
+            getData();
 
         }
 
@@ -498,6 +500,25 @@
 
             console.log(self.editedValues);
         }
+
+
+
+        // displays the messages
+        self.openConfiguration = function () {
+
+            var modalInstance = $uibModal.open({
+                animation: true,
+                templateUrl: '/app/components/data-validation/configuration.html',
+                scope: $scope.$new()
+            });
+
+            modalInstance.result.then(function() { getData(); });
+
+
+        };
+
+
+      
 
         init();
     }

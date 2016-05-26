@@ -65,6 +65,7 @@
     <Content Include="app\app.route.js" />
     <Content Include="app\app.start.js" />
     <Content Include="app\components\configuration\configuration.html" />
+    <Content Include="app\components\data-validation\configuration.html" />
     <Content Include="app\components\data-validation\data-validation.html" />
     <Content Include="app\components\data-validation\data-validation.js" />
     <Content Include="app\components\pi-data-archive\pi-data-archive.html" />

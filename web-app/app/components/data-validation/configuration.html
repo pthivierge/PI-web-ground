@@ -1,0 +1,85 @@
+﻿
+<div class="panel panel-default" style="margin: 1em;padding: 0.3em">
+
+    <div class="row table-bordered">
+        <div class="col-sm-8">
+            <div class="h1">
+                <h2>Configuration <small>Data Validation</small> </h2>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="text-center">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-body">
+
+        <div style="padding: 5px">
+            <div class="row">
+                <div class="col-md-12 form-group">
+                    <label>Path to element</label>
+                    <input type="text" class="form-control" ng-model="ctrl.$localStorage.dataValidation.elementPath" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12  form-group">
+                    <label>Optional - Attribute Category to filter</label>
+                    <input type="text" class="form-control" ng-model="ctrl.$localStorage.dataValidation.attributeCategory" />
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Select Attributes to display</label>
+                </div>
+                <div class="col-md-6">
+                    <button ng-click="ctrl.reloadAttributes()" type="button" class="btn btn-primary" style="float: right">Reload Attributes</button>
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-md-12  form-group">
+
+                    <!--<div ng-model="ctrl.selectedAttribute" class="button-group">
+                        <button id="single-button" type="button" class="btn btn-default btn-sm dropdown-toggle" uib-dropdown-toggle><span class="glyphicon glyphicon-cog"></span> <span class="caret"></span></button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li ng-repeat="attribute in ctrl.attributes">1324<a href="#" class="small" data-value="{{attribute.Name}}" tabIndex="-1"><input type="checkbox"/>&nbsp;{{attribute.Name}}</a></li>
+                        </ul>
+                    </div>-->
+
+                    <ul style="padding: 0.5em; max-height: 20em; overflow-y: scroll" class="list-group">
+                        <li class="list-group-item" ng-repeat="attribute in ctrl.attributes">
+                            <input type="checkbox" ng-model="attribute.selected"/>{{attribute.Name}}
+                        </li>
+                    </ul>
+
+
+                    <!-- <select name="attributes" ng-model="ctrl.selectedAttribute" class="editable-input form-control input-sm" required>-->
+                    <!--<option ng-repeat="attribute in ctrl.attributes" value="{{attribute.Name}}">{{attribute.Name}}</option>-->
+                    <!--</select>
+                    /div><br>-->
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                    <button ng-click="$close(true)" type="button" class="btn btn-primary" style="float: right">Close</button>
+                </div>
+              
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+
