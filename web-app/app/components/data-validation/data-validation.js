@@ -17,6 +17,8 @@
 
         // initialize variables
         self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 00:00
+
+        var originalData = [];
         self.data = [];
 
         self.selectedAttributes = [];   // selected attributes, driven by the checkboxes
@@ -26,7 +28,28 @@
         self.attApiCount = 0;           // obsolete? tbd , keeps the number of attributes loaded 
         self.dataEntryFlags = ["V", "O", "T", "R", "D", "C", "F", "N", "A", "P", "M", "Z"]; // this could be replaced with a call to get DS
 
-        var originalData = [];
+        // chart
+        self.chartData = [];
+        self.chartLabels = [];
+        self.chartLegend = [];
+        self.chartLegend = [];
+        self.chartOptions = [];
+        self.chartSeries = [];
+
+        /**
+            chart-data: series data
+            chart-labels: x axis labels
+            chart-legend (default: false): show legend below the chart
+            chart-options (default: {}): Chart.js options
+            chart-series (default: []): series labels
+            chart-click (optional): onclick event handler
+            chart-hover (optional): onmousemove event handler
+            chart-colours (default to global colours): colours for the chart
+         */
+
+
+
+
 
 
 
@@ -173,32 +196,85 @@
             }
 
 
-            var attributeData = {};
-            // getting the first attribute data
-            attributeData = self.attributesData[0].data.Items;
+            // create dataset for the data
+            var row = {}
 
-            // goes over each timestamp on the dataset
-            var index = 0;
-            angular.forEach(attributeData, function (object, key) {
+            // goes over each value of the first attribute data set ( we want to loop 24 hours, one hour = 1 row)
+            var i;
+            var k;
+            var value;
+            for (k = 0; k < self.attributesData[0].data.Items.length; k++) {
 
-                var row = {}
+                var row = {}; // reset the serie data
 
-                var date = moment.tz(object.Value.Timestamp, "Europe/Paris");
-                row.time = date.format('HH:mm');
+                // goes over each dataset, and pick the corresponding value for the row
+                for (i = 0; i < self.attributesData.length; i++) {
 
-                for (var j = 0; j < self.attributesData.length; j++) {
-                    var rawVal = self.attributesData[j].data.Items[index];
-                    var value = "";
+                    var rawVal = self.attributesData[i].data.Items[k];
+
+                    // timestamp - only once
+                    if (i === 0) {
+                        var date = moment.tz(rawVal.Value.Timestamp, "Europe/Paris");
+                        row.time = date.format('HH:mm');
+                    }
+                    
+                    // other values
+                    value = "";
                     if (rawVal.Value.IsSystem === true)
                         value = rawVal.Value.Name;
                     else
                         value = (isNaN(rawVal.Value.Value)) ? rawVal.Value.Value : formatter.format(rawVal.Value.Value);
 
-                    row[self.attributesData[j].Name] = value;
+                    // stores the value
+                    row[self.attributesData[i].Name] = value;
                 }
 
                 self.data.push(row);
-            });
+                
+            }
+
+
+            console.log(self.data);
+
+
+            // CHART
+            // building data for the chart
+            self.chartData = [];
+
+            // chart
+            self.chartLabels = [];
+            self.chartSeries = [];
+
+            // goes over each data set we have - it corresponds to each attribute
+            for (k = 0; k < self.attributesData.length; k++) {
+
+                self.chartSeries.push(self.attributesData[k].Name);
+                var serieData = []; // reset the serie data
+
+                // goes over each value of each data set
+                for (i = 0; i < self.attributesData[k].data.Items.length; i++) {
+
+                    // X axis, only once
+                    if (k === 0) {
+                        // chart
+                        var date = moment.tz(self.attributesData[k].data.Items[i].Value.Timestamp, "Europe/Paris");
+                        var time = date.format('HH:mm');
+                        self.chartLabels.push(time);
+                    }
+
+                    value = self.attributesData[k].data.Items[i];
+                    if (value.Value.IsSystem === true || value.Value.Value.Errors !== undefined)
+                        value = 0;
+                    else
+                        value = value.Value.Value;
+
+                    serieData.push(value);
+                }
+
+                self.chartData.push(serieData);
+            }
+
+            console.log(self.chartSeries);
 
             originalData.length = 0;
             originalData = angular.copy(self.data);

@@ -16,7 +16,8 @@
 
 
         // 3rd Party Modules
-        'ui.bootstrap'
+        'ui.bootstrap',
+        'chart.js'
     ]);
 
 
