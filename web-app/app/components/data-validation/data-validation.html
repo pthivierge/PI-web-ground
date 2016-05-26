@@ -5,7 +5,11 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="bs-callout bs-callout-info">
-                        <h4>Overview</h4>
+                        <h4>Overview
+                            <button style="float: right" type="button" class="btn btn-default btn-lg">
+                                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span> Config.
+                            </button>
+                        </h4>
                         <p>This is an example that demonstrates how to create data validation with the usage of PI WEB API.</p>
                     </div>
                 </div>
@@ -14,6 +18,7 @@
         </div>
     </div>
     <div class="row">
+
         <div class="col-md-12" ng-controller="dataValidationCtrl as ctrl">
 
             <!-- Configuration Panel -->
@@ -59,7 +64,7 @@
 
                         <label>Date</label>
                         <p class="input-group">
-                            <input type="text" class="form-control" uib-datepicker-popup="yyyy-MM-dd" ng-model="ctrl.selectedTime" is-open="popup1.opened" datepicker-options="ctrl.dateOptions" ng-required="true" close-text="Close" />
+                            <input type="text" class="form-control" uib-datepicker-popup="yyyy-MM-dd" ng-model="ctrl.selectedTime" is-open="popup1.opened" datepicker-options="ctrl.dateOptions" ng-required="true" close-text="Close"/>
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default" ng-click="popup1.opened = true"><i class="glyphicon glyphicon-calendar"></i></button>
                             </span>
@@ -83,7 +88,7 @@
 
                                 <ul style="padding: 0.5em" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                                     <li role="menuitem" ng-repeat="attribute in ctrl.attributes">
-                                        <input type="checkbox"  ng-model="attribute.selected" />{{attribute.Name}}
+                                        <input type="checkbox" ng-model="attribute.selected"/>{{attribute.Name}}
                                     </li>
                                 </ul>
 
@@ -93,81 +98,82 @@
                             <!--</select><br>-->
                         </div>
                     </div>
-                   
+
                     <div class="col-md-4">
                         <button ng-click="ctrl.reloadData()" type="button" class="btn btn-danger" style="margin-top: 23px">Get Data</button>
+                        <button ng-click="ctrl.saveChanges()" type="button" class="btn btn-danger" style="margin-top: 23px">Save</button>
                     </div>
 
                 </div>
             </div>
 
-                <div style="margin-top: 2em" class="panel panel-default">
-                    <div class="panel-heading"><b>Data to validate - {{ctrl.attributeName}}</b>
-                    </div>
-                    <table ng-table="ctrl.tableParams" class="table table-bordered table-hover table-condensed editable-table demoTable" ng-form="ctrl.tableForm" disable-filter="ctrl.isAdding" tracked-table="ctrl.tableTracker">
-                        <thead>
-                            <tr>
-                                <td>Time</td>
-                                <td ng-repeat="dataSet in ctrl.attributesData">{{dataSet.Name}}</td>
-                            </tr>
-                        </thead>
-                        <!-- $data is maintained by ng-table itself, it is populated by the getData() call -->
-                        <tr ng-repeat="row in $data" ng-form="rowForm" tracked-table-row="row">
-
-                            <!-- TIME - fixed in the dataset -->
-                            <td title="'Time'" sortable="'time'" ng-switch="0" ng-class="time.$dirty ? 'bg-warning' : ''" ng-form="time" tracked-table-cell>
-                                <span ng-switch-default class="editable-text">{{row.time}}</span>
-                                <div class="controls" ng-class="time.$invalid && time.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                                    <input type="datetime-local" name="time" ng-model="row.time" class="editable-input form-control input-sm" required/>
-                                </div>
-                            </td>
-
-                            <!-- Other columns - may vary self.attributesData -->
-                            <td ng-repeat="dataSet in ctrl.attributesData" ng-switch="row.isEditing" ng-class="value.$dirty ? 'bg-warning' : ''" ng-form="value" tracked-table-cell>
-                                <span ng-switch-default class="editable-text">{{row[dataSet.Name]}} </span>
-                                <div class="controls" ng-class="value.$invalid && value.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                                    <input type="text" name="value" ng-model="row[dataSet.Name]" class="editable-input form-control input-sm" required />
-                                </div>
-                            </td>
-
-                            <!--<td title="'Value'" sortable="'value'" ng-switch="0" ng-class="value.$dirty ? 'bg-warning' : ''" ng-form="value" tracked-table-cell>
-                                <span ng-switch-default class="editable-text">{{row.value}}</span>
-                                <div class="controls" ng-class="value.$invalid && value.$dirty ? 'has-error' : ''" ng-switch-when="true">
-                                    <input type="number" name="value" ng-model="row.value" class="editable-input form-control input-sm" required/>
-                                </div>
-                            </td>-->
-                            <!--
-                            <td title="'Flag'" sortable="'flag'" ng-switch="row.isEditing" ng-class="flag.$dirty ? 'bg-warning' : ''" ng-form="flag" tracked-table-cell>
-                                <span ng-switch-default class="editable-text">{{row.flag}}</span>
-                                <div class="controls" ng-class="flag.$invalid && flag.$dirty ? 'has-error' : ''" ng-switch-when="true">
-
-                                    <select name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required>
-                                        <option ng-repeat="flag in ctrl.dataEntryFlags" value="{{flag}}">{{flag}}</option>
-                                    </select>
-                                </div>
-                            </td>
-                            -->
-                            <!-- <input type="text" name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required/>-->
-                            <td>
-                                <button class="btn btn-primary btn-sm" ng-click="ctrl.save(row, rowForm)" ng-if="row.isEditing" ng-disabled="rowForm.$pristine || rowForm.$invalid"><span class="glyphicon glyphicon-ok"></span></button>
-                                <button class="btn btn-default btn-sm" ng-click="ctrl.cancel(row, rowForm)" ng-if="row.isEditing"><span class="glyphicon glyphicon-remove"></span></button>
-                                <button class="btn btn-default btn-sm" ng-click="row.isEditing = true" ng-if="!row.isEditing"><span class="glyphicon glyphicon-pencil"></span></button>
-
-                                <!-- delete button -->
-                                <!--<button class="btn btn-danger btn-sm" ng-click="ctrl.del(row)" ng-if="!row.isEditing"><span class="glyphicon glyphicon-trash"></span></button>-->
-                            </td>
-                        </tr>
-                    </table>
-
-
-                    <canvas id="line" class="chart chart-line" chart-data="ctrl.chartData"
-                            chart-labels="ctrl.chartLabels" chart-legend="true" chart-series="ctrl.chartSeries"
-                            chart-click="">
-                        
-                    </canvas> 
+            <div style="margin-top: 2em" class="panel panel-default">
+                <div class="panel-heading"><b>Data to validate - {{ctrl.attributeName}}</b>
                 </div>
+                <table ng-table="ctrl.tableParams" class="table table-bordered table-hover table-condensed editable-table demoTable" ng-form="ctrl.tableForm" disable-filter="ctrl.isAdding" tracked-table="ctrl.tableTracker">
+                    <thead>
+                    <tr>
+                        <td><label>Time</label></td>
+                        <td ng-repeat="dataSet in ctrl.attributesData"><label>{{dataSet.Attribute.Description}}</label> </td>
+                    </tr>
+                    </thead>
+                    <!-- $data is maintained by ng-table itself, it is populated by the getData() call -->
+                    <tr ng-repeat="row in $data" ng-form="rowForm" tracked-table-row="row">
 
+                        <!-- TIME - fixed in the dataset -->
+                        <td title="'Time'" sortable="'time'" ng-switch="0" ng-class="time.$dirty ? 'bg-warning' : ''" ng-form="time" tracked-table-cell>
+                            <span ng-switch-default class="editable-text">{{row.time}}</span>
+                            <div class="controls" ng-class="time.$invalid && time.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                                <input type="datetime-local" name="time" ng-model="row.time" class="editable-input form-control input-sm" required/>
+                            </div>
+                        </td>
+
+                        <!-- Other columns - may vary self.attributesData -->
+                        <td ng-repeat="dataSet in ctrl.attributesData" ng-switch="row.isEditing" ng-class="value.$dirty ? 'bg-warning' : ''" ng-form="value" tracked-table-cell>
+                            <span ng-switch-default class="editable-text">{{row.values['id' + dataSet.Index].value}} </span>
+                            <div class="controls" ng-class="value.$invalid && value.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                                <input type="text" name="value" ng-model="row.values['id' + dataSet.Index].value" class="editable-input form-control input-sm" required/>
+                            </div>
+                        </td>
+
+                        <!--<td title="'Value'" sortable="'value'" ng-switch="0" ng-class="value.$dirty ? 'bg-warning' : ''" ng-form="value" tracked-table-cell>
+                            <span ng-switch-default class="editable-text">{{row.value}}</span>
+                            <div class="controls" ng-class="value.$invalid && value.$dirty ? 'has-error' : ''" ng-switch-when="true">
+                                <input type="number" name="value" ng-model="row.value" class="editable-input form-control input-sm" required/>
+                            </div>
+                        </td>-->
+                        <!--
+                        <td title="'Flag'" sortable="'flag'" ng-switch="row.isEditing" ng-class="flag.$dirty ? 'bg-warning' : ''" ng-form="flag" tracked-table-cell>
+                            <span ng-switch-default class="editable-text">{{row.flag}}</span>
+                            <div class="controls" ng-class="flag.$invalid && flag.$dirty ? 'has-error' : ''" ng-switch-when="true">
+
+                                <select name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required>
+                                    <option ng-repeat="flag in ctrl.dataEntryFlags" value="{{flag}}">{{flag}}</option>
+                                </select>
+                            </div>
+                        </td>
+                        -->
+                        <!-- <input type="text" name="flag" ng-model="row.flag" class="editable-input form-control input-sm" required/>-->
+                        <td>
+                            <button class="btn btn-primary btn-sm" ng-click="ctrl.save(row, rowForm)" ng-if="row.isEditing" ng-disabled="rowForm.$pristine || rowForm.$invalid"><span class="glyphicon glyphicon-ok"></span></button>
+                            <button class="btn btn-default btn-sm" ng-click="ctrl.cancel(row, rowForm)" ng-if="row.isEditing"><span class="glyphicon glyphicon-remove"></span></button>
+                            <button class="btn btn-default btn-sm" ng-click="row.isEditing = true" ng-if="!row.isEditing"><span class="glyphicon glyphicon-pencil"></span></button>
+
+                            <!-- delete button -->
+                            <!--<button class="btn btn-danger btn-sm" ng-click="ctrl.del(row)" ng-if="!row.isEditing"><span class="glyphicon glyphicon-trash"></span></button>-->
+                        </td>
+                    </tr>
+                </table>
+
+
+                <canvas id="line" class="chart chart-line" chart-data="ctrl.chartData"
+                        chart-labels="ctrl.chartLabels" chart-legend="true" chart-series="ctrl.chartSeries"
+                        chart-click="">
+
+                </canvas>
             </div>
+
+        </div>
     </div>
 
 </div>

@@ -39,7 +39,7 @@ app.factory('piWebApiHttpService', ['$http', '$q', function($http, $q) {
           delete $http.defaults.headers.common.Authorization;
           $http.defaults.withCredentials = true;
           //initAuthHeaders('Negociate');
-          console.log("Authentication set to Kerberos")
+          console.log("Authentication set to Kerberos");
         break;
     }
 
@@ -94,10 +94,10 @@ app.factory('piWebApiHttpService', ['$http', '$q', function($http, $q) {
   };
 
 
-  service.writeValue = function(webId, value) {
+  service.writeValue = function(webId,time, value) {
 
     var data = {};
-    // data.Timestamp="2014-07-22T14:00:00Z";
+    data.Timestamp = time;
     data.Value = value;
     //  data.UnitsAbbreviation="m";
     data.Good = true;

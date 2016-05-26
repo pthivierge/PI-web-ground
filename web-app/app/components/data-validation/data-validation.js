@@ -15,14 +15,27 @@
         // be defined on the $scope variable.
         var self = this;
 
+        // in case it is the first time the page loads we set the parameters here
+        $scope.$storage = $localStorage.$default({
+            attributes: []
+        });
+
         // initialize variables
         self.selectedTime = moment(0, "HH").format('YYYY-MM-DD'); // today 00:00
 
         var originalData = [];
         self.data = [];
 
+
         self.selectedAttributes = [];   // selected attributes, driven by the checkboxes
-        self.attributes = [];           // contains attributes objects
+
+
+        
+        self.attributes = $scope.$storage.attributes;           // contains attributes objects
+
+
+
+
         self.attributesData = [];       // contains hourly averages coming from each attribute.
 
         self.attApiCount = 0;           // obsolete? tbd , keeps the number of attributes loaded 
@@ -35,6 +48,9 @@
         self.chartLegend = [];
         self.chartOptions = [];
         self.chartSeries = [];
+
+        self.editedValues = [];
+        // editedValues={webid, timestamp,value}
 
         /**
             chart-data: series data
@@ -66,6 +82,7 @@
         self.reloadData = getData;
         self.reloadAttributes = loadAttributes;
         self.$localStorage = $localStorage;
+        self.saveChanges = saveChanges;
 
         if ($localStorage.dataValidation === undefined) {
             $localStorage.dataValidation = {};
@@ -86,15 +103,19 @@
             return piWebApiHttpService.query(response.data.Links.Attributes + filter);
         }
 
+
         function endsWith(str, suffix) {
-            return str.indexOf(suffix, str.length - suffix.length) !== -1;
+            return str.toLowerCase().indexOf(suffix.toLowerCase(), str.length - suffix.length) !== -1;
         }
 
         // retrieves the data for all the attributes
         function getAttributesData() {
 
+
             self.attributesData.length = 0;
             var promises = [];
+
+            self.selectedAttributes = Enumerable.From(self.attributes).Where("$.selected===true").ToArray();;
 
 
             if (self.selectedAttributes.length < 0) {
@@ -107,16 +128,16 @@
             }
 
             // get all selected attributes: 
-            var selectedAttr = Enumerable.From(self.attributes).Where("$.selected===true").ToArray();;
+            
 
-            self.attributesCount = selectedAttr.length;
-
-            angular.forEach(selectedAttr, function (attribute) {
-
+            self.attributesCount = self.selectedAttributes.length;
+            
+            angular.forEach(self.selectedAttributes, function (attribute, index) {
+                
                 var deferred = $q.defer();
 
-                if (endsWith(attribute.Name, "_Flag")) {
-                    getInterpolated(attribute)
+                if (endsWith(attribute.Name, "Flag")) {
+                    getInterpolated(attribute, index)
                        .then(function (data) {
                            deferred.resolve(data);
                        }).catch(function (error) {
@@ -124,7 +145,7 @@
                        });
                 }
                 else {
-                    getHourlyAverage(attribute)
+                    getHourlyAverage(attribute, index)
                         .then(function (data) {
                             deferred.resolve(data);
                         }).catch(function (error) {
@@ -140,7 +161,16 @@
 
         }
 
-        function getInterpolated(attribute) {
+
+
+        function cleanAttributeName(attributeName)
+        {
+            // removes all characters except underscores (\w) ) 
+            return attributeName.replace(/[^\w]/gi, '');
+        }
+
+
+        function getInterpolated(attribute,index) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
             console.log("%s gathering interpolated data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
@@ -149,35 +179,51 @@
 
             console.log(encodeURI(interpolatedData));
             return piWebApiHttpService.query(encodeURI(interpolatedData)).then(function (response) {
-                response.Name = attribute.Name;
+                response.Index = index;
+                response.Attribute = attribute;
                 self.attributesData.push(response);
+                
+
+            }).finally(function () {
                 self.attApiCount++;
+
                 if (self.attributesCount === self.attApiCount) {
                     updateDataTableAndUI();
-                    self.attApiCount = 0;
                 }
 
+            }).catch(function(error) {
+                var response = {};
+                response.Attribute = attribute;
+                response.Index = index;
+                self.attributesData.push(response);
             });
         }
 
 
-        function getHourlyAverage(attribute) {
+        function getHourlyAverage(attribute,index) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
-            console.log("%s gathering data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
-
+            console.log("%s gathering hourly average data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
+            
             var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
 
             console.log(encodeURI(HourlyAverages));
             return piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function (response) {
-                response.Name = attribute.Name;
+                response.Attribute = attribute;
+                response.Index = index;
                 self.attributesData.push(response);
+               
+            }).finally(function() {
                 self.attApiCount++;
+
                 if (self.attributesCount === self.attApiCount) {
                     updateDataTableAndUI();
-                    self.attApiCount = 0;
                 }
 
+            }).catch(function (error) {
+                var response = {};
+                response.Attribute = attribute;
+                self.attributesData.push(response);
             });
         }
 
@@ -196,6 +242,11 @@
             }
 
 
+            self.attributesData.sort(function(a, b) {
+                return a.Attribute.Name.toLowerCase().localeCompare(b.Attribute.Name.toLowerCase());
+            });
+
+
             // create dataset for the data
             var row = {}
 
@@ -203,30 +254,47 @@
             var i;
             var k;
             var value;
-            for (k = 0; k < self.attributesData[0].data.Items.length; k++) {
+            // for (k = 0; k < self.attributesData[0].data.Items.length; k++) {
+            // we got 24hours to display
+             for (k = 0; k < 24; k++) {
 
-                var row = {}; // reset the serie data
+                 var row = {}; // reset the serie data
+                 row.values = {};
 
                 // goes over each dataset, and pick the corresponding value for the row
                 for (i = 0; i < self.attributesData.length; i++) {
-
+                    
                     var rawVal = self.attributesData[i].data.Items[k];
 
+                    // hack
+                    // fixes the object - interpolated call has not same format as summary call
+                    if (rawVal.Timestamp !== undefined && rawVal.Value.Timestamp === undefined)
+                        rawVal.Value.Timestamp = rawVal.Timestamp;
+
                     // timestamp - only once
-                    if (i === 0) {
+                    if (row.time === undefined && rawVal.Value.Timestamp!==undefined) {
+
                         var date = moment.tz(rawVal.Value.Timestamp, "Europe/Paris");
                         row.time = date.format('HH:mm');
                     }
+
+                    
                     
                     // other values
                     value = "";
-                    if (rawVal.Value.IsSystem === true)
+                    if (rawVal.Value.IsSystem === true || self.attributesData[i].Attribute.Type === 'EnumerationValue')
                         value = rawVal.Value.Name;
                     else
                         value = (isNaN(rawVal.Value.Value)) ? rawVal.Value.Value : formatter.format(rawVal.Value.Value);
 
                     // stores the value
-                    row[self.attributesData[i].Name] = value;
+                    var selectedAttIndex = self.attributesData[i].Index;
+                    row.values['id' + selectedAttIndex] = {};
+                    row.values['id' + selectedAttIndex].name = self.attributesData[i].Attribute.Name;
+                    row.values['id' + selectedAttIndex].webId = self.selectedAttributes[selectedAttIndex].WebId;
+                    row.values['id' + selectedAttIndex].value = value;
+                    row.values['id' + selectedAttIndex].type = endsWith(self.attributesData[i].Attribute.Name, "flag") ? 'flag' : 'values';
+
                 }
 
                 self.data.push(row);
@@ -245,33 +313,39 @@
             self.chartLabels = [];
             self.chartSeries = [];
 
+            // retain only the attributes who are not flags
+
+
             // goes over each data set we have - it corresponds to each attribute
             for (k = 0; k < self.attributesData.length; k++) {
 
-                self.chartSeries.push(self.attributesData[k].Name);
-                var serieData = []; // reset the serie data
+                if (self.attributesData[k].Attribute.Type !== 'EnumerationValue') {
+                    self.chartSeries.push(self.attributesData[k].Attribute.Name);
+                    var serieData = []; // reset the serie data
 
-                // goes over each value of each data set
-                for (i = 0; i < self.attributesData[k].data.Items.length; i++) {
+                    // goes over each value of each data set
+                    for (i = 0; i < self.attributesData[k].data.Items.length; i++) {
 
-                    // X axis, only once
-                    if (k === 0) {
-                        // chart
-                        var date = moment.tz(self.attributesData[k].data.Items[i].Value.Timestamp, "Europe/Paris");
-                        var time = date.format('HH:mm');
-                        self.chartLabels.push(time);
+                        // X axis, only once
+                        if (k === 0) {
+                            // chart
+                            var date = moment.tz(self.attributesData[k].data.Items[i].Value.Timestamp, "Europe/Paris");
+                            var time = date.format('HH:mm');
+                            self.chartLabels.push(time);
+                        }
+
+                        value = self.attributesData[k].data.Items[i];
+                        if (value.Value.IsSystem === true)
+                            value = 0;
+                        else
+                            value = isNaN(value.Value.Value) ? 0 : value.Value.Value ;
+
+                        serieData.push(value);
                     }
 
-                    value = self.attributesData[k].data.Items[i];
-                    if (value.Value.IsSystem === true || value.Value.Value.Errors !== undefined)
-                        value = 0;
-                    else
-                        value = value.Value.Value;
-
-                    serieData.push(value);
+                    self.chartData.push(serieData);
                 }
-
-                self.chartData.push(serieData);
+               
             }
 
             console.log(self.chartSeries);
@@ -280,14 +354,14 @@
             originalData = angular.copy(self.data);
             self.tableParams.total(self.data.length);
             self.tableParams.reload();
+            self.attApiCount = 0;
 
 
         }
 
         function init() {
-            $scope.$parent.globals.loading++;
-            console.log($scope.$parent.loading);
-
+            
+            
             // it is not required to set the piWebAPIHttpService settings if there were set in the configuration already and iitialized.
             // however, if one enters the application with the direct url to this page, we need to initialize if.
             // in such situation the configuration stored in the localStorage is used
@@ -296,25 +370,18 @@
             piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
-            loadAttributes();
+            if (self.attributes.length === 0)
+                {
+                $scope.$parent.globals.loading++;
+                loadAttributes();
+            }
+            else {
+                getData();
+            }
+
         }
 
 
-        //function toggleSelectedAttribute=function() {
-        //    // toggle selection for a given fruit by name
-        //    $scope.toggleSelection = function toggleSelection(fruitName) {
-        //        var idx = $scope.selection.indexOf(fruitName);
-
-        //        // is currently selected
-        //        if (idx > -1) {
-        //            $scope.selection.splice(idx, 1);
-        //        }
-
-        //            // is newly selected
-        //        else {
-        //            $scope.selection.push(fruitName);
-        //        }
-        //}
 
         function loadAttributes() {
 
@@ -327,8 +394,8 @@
               .then(getAttributes) // get attributes
               .then(function (response) {
                   self.attributes = response.data.Items;
+                    $scope.$storage.attributes = self.attributes;
                   self.attributesCount = self.attributes.length;
-                  self.selectedAttributes.push(self.attributes[0]);
               })
               .catch(onError)
               .finally(function () { // cleanup - this always executes
@@ -352,6 +419,26 @@
 
                 });
 
+
+        }
+
+        function saveChanges() {
+
+            for (var i = 0; i < self.editedValues.length; i++) {
+
+                var webId = self.editedValues[i].webId;
+                var timeStamp = self.editedValues[i].timeStamp;
+                var value = self.editedValues[i].value;
+
+
+                console.log("Writing changes for %s : %s, %s",webId,timeStamp,value);
+                piWebApiHttpService.writeValue(webId, timeStamp, value);
+
+
+            }
+
+
+            self.editedValues.length = 0;
 
         }
 
@@ -398,6 +485,18 @@
         function save(row, rowForm) {
             var originalRow = resetRow(row, rowForm);
             angular.extend(originalRow, row);
+
+            for (var key in row.values) {
+                if (row.values[key].type === "flag") {
+                        var editedValue = {};
+                        editedValue.timeStamp = moment(self.selectedTime).add(moment.duration(row.time));
+                        editedValue.value = row.values[key].value;
+                        editedValue.webId = row.values[key].webId;
+                        self.editedValues.push(editedValue);
+                }
+            }
+
+            console.log(self.editedValues);
         }
 
         init();
