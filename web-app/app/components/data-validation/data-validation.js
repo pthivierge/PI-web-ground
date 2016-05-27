@@ -115,29 +115,39 @@
             self.selectedAttributes = Enumerable.From(self.attributes).Where("$.selected===true").ToArray();;
 
 
-            if (self.selectedAttributes.length < 0) {
+            if (self.selectedAttributes.length < 1) {
                 console.log("no attribute selected.  Cannot update data table");
                 $scope.$parent.globals.alerts.push({
                     type: 'warning',
                     message: "There was no attribute selected, thus no data will be queried."
                 });
-                return;
+
+                // returns an empty promise for the rest of the code to continue correctly
+                var deferred = $q.defer();
+                promises.push(deferred);
+                return $q.all(promises);
             }
 
             // get all selected attributes: 
-            
+
 
             self.attributesCount = self.selectedAttributes.length;
-            
+
             angular.forEach(self.selectedAttributes, function (attribute, index) {
-                
+
                 var deferred = $q.defer();
 
                 if (endsWith(attribute.Name, "Flag")) {
                     getInterpolated(attribute, index)
                        .then(function (data) {
                            deferred.resolve(data);
-                       }).catch(function (error) {
+                       }).catch(function (err) {
+
+
+                           var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Errors.toString();
+                           $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
+
+
                            deferred.reject();
                        });
                 }
@@ -145,7 +155,11 @@
                     getHourlyAverage(attribute, index)
                         .then(function (data) {
                             deferred.resolve(data);
-                        }).catch(function (error) {
+                        }).catch(function (err) {
+
+                            var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Errors.toString();
+                            $scope.$parent.globals.alerts.push({ type: 'danger', message: errMessage });
+
                             deferred.reject();
                         });
                 }
@@ -160,14 +174,13 @@
 
 
 
-        function cleanAttributeName(attributeName)
-        {
+        function cleanAttributeName(attributeName) {
             // removes all characters except underscores (\w) ) 
             return attributeName.replace(/[^\w]/gi, '');
         }
 
 
-        function getInterpolated(attribute,index) {
+        function getInterpolated(attribute, index) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
             console.log("%s gathering interpolated data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
@@ -179,7 +192,7 @@
                 response.Index = index;
                 response.Attribute = attribute;
                 self.attributesData.push(response);
-                
+
 
             }).finally(function () {
                 self.attApiCount++;
@@ -188,7 +201,7 @@
                     updateDataTableAndUI();
                 }
 
-            }).catch(function(error) {
+            }).catch(function (error) {
                 var response = {};
                 response.Attribute = attribute;
                 response.Index = index;
@@ -197,11 +210,11 @@
         }
 
 
-        function getHourlyAverage(attribute,index) {
+        function getHourlyAverage(attribute, index) {
 
             var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
             console.log("%s gathering hourly average data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
-            
+
             var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
 
             console.log(encodeURI(HourlyAverages));
@@ -209,8 +222,8 @@
                 response.Attribute = attribute;
                 response.Index = index;
                 self.attributesData.push(response);
-               
-            }).finally(function() {
+
+            }).finally(function () {
                 self.attApiCount++;
 
                 if (self.attributesCount === self.attApiCount) {
@@ -239,7 +252,7 @@
             }
 
 
-            self.attributesData.sort(function(a, b) {
+            self.attributesData.sort(function (a, b) {
                 return a.Attribute.Name.toLowerCase().localeCompare(b.Attribute.Name.toLowerCase());
             });
 
@@ -253,14 +266,14 @@
             var value;
             // for (k = 0; k < self.attributesData[0].data.Items.length; k++) {
             // we got 24hours to display
-             for (k = 0; k < 24; k++) {
+            for (k = 0; k < 24; k++) {
 
-                 var row = {}; // reset the serie data
-                 row.values = {};
+                var row = {}; // reset the serie data
+                row.values = {};
 
                 // goes over each dataset, and pick the corresponding value for the row
                 for (i = 0; i < self.attributesData.length; i++) {
-                    
+
                     var rawVal = self.attributesData[i].data.Items[k];
 
                     // hack
@@ -269,14 +282,14 @@
                         rawVal.Value.Timestamp = rawVal.Timestamp;
 
                     // timestamp - only once
-                    if (row.time === undefined && rawVal.Value.Timestamp!==undefined) {
+                    if (row.time === undefined && rawVal.Value.Timestamp !== undefined) {
 
                         var date = moment.tz(rawVal.Value.Timestamp, "Europe/Paris");
                         row.time = date.format('HH:mm');
                     }
 
-                    
-                    
+
+
                     // other values
                     value = "";
                     if (rawVal.Value.IsSystem === true || self.attributesData[i].Attribute.Type === 'EnumerationValue')
@@ -295,7 +308,7 @@
                 }
 
                 self.data.push(row);
-                
+
             }
 
 
@@ -335,14 +348,14 @@
                         if (value.Value.IsSystem === true)
                             value = 0;
                         else
-                            value = isNaN(value.Value.Value) ? 0 : value.Value.Value ;
+                            value = isNaN(value.Value.Value) ? 0 : value.Value.Value;
 
                         serieData.push(value);
                     }
 
                     self.chartData.push(serieData);
                 }
-               
+
             }
 
             console.log(self.chartSeries);
@@ -357,8 +370,8 @@
         }
 
         function init() {
-            
-            
+
+
             // it is not required to set the piWebAPIHttpService settings if there were set in the configuration already and iitialized.
             // however, if one enters the application with the direct url to this page, we need to initialize if.
             // in such situation the configuration stored in the localStorage is used
@@ -367,9 +380,8 @@
             piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
 
-            if (self.attributes.length === 0)
-                {
-                $scope.$parent.globals.loading++;
+            if (self.attributes.length === 0) {
+
                 loadAttributes();
             }
             else {
@@ -381,7 +393,7 @@
 
 
         function loadAttributes() {
-
+            $scope.$parent.globals.loading++;
             console.log("Loading attributes");
 
             self.attributes.length = 0;
@@ -391,7 +403,7 @@
               .then(getAttributes) // get attributes
               .then(function (response) {
                   self.attributes = response.data.Items;
-                    $scope.$storage.attributes = self.attributes;
+                  $scope.$storage.attributes = self.attributes;
                   self.attributesCount = self.attributes.length;
               })
               .catch(onError)
@@ -428,7 +440,7 @@
                 var value = self.editedValues[i].value;
 
 
-                console.log("Writing changes for %s : %s, %s",webId,timeStamp,value);
+                console.log("Writing changes for %s : %s, %s", webId, timeStamp, value);
                 piWebApiHttpService.writeValue(webId, timeStamp, value)
                     .catch(function (err) {
                         var errMessage = err.status + ' ' + err.statusText + ': ' + err.data.Errors.toString();
@@ -437,7 +449,7 @@
 
 
             }
-            
+
             self.editedValues.length = 0;
 
             getData();
@@ -490,11 +502,11 @@
 
             for (var key in row.values) {
                 if (row.values[key].type === "flag") {
-                        var editedValue = {};
-                        editedValue.timeStamp = moment(self.selectedTime).add(moment.duration(row.time));
-                        editedValue.value = row.values[key].value;
-                        editedValue.webId = row.values[key].webId;
-                        self.editedValues.push(editedValue);
+                    var editedValue = {};
+                    editedValue.timeStamp = moment(self.selectedTime).add(moment.duration(row.time));
+                    editedValue.value = row.values[key].value;
+                    editedValue.webId = row.values[key].webId;
+                    self.editedValues.push(editedValue);
                 }
             }
 
@@ -512,13 +524,13 @@
                 scope: $scope.$new()
             });
 
-            modalInstance.result.then(function() { getData(); });
+            modalInstance.result.then(function () { getData(); });
 
 
         };
 
 
-      
+
 
         init();
     }
