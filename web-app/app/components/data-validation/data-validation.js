@@ -182,10 +182,10 @@
 
         function getInterpolated(attribute, index) {
 
-            var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
-            console.log("%s gathering interpolated data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
+            var et = moment(self.selectedTime.toString()).add(moment.duration("24:00:00"));
+            console.log("%s gathering interpolated data from %s to %s", attribute.Name, moment(self.selectedTime.toString()).toISOString(), et.toISOString());
 
-            var interpolatedData = attribute.Links.InterpolatedData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&interval=60m';
+            var interpolatedData = attribute.Links.InterpolatedData + '?startTime=' + moment(self.selectedTime.toString()).toISOString() + '&endTime=' + et.toISOString() + '&interval=60m';
 
             console.log(encodeURI(interpolatedData));
             return piWebApiHttpService.query(encodeURI(interpolatedData)).then(function (response) {
@@ -212,10 +212,12 @@
 
         function getHourlyAverage(attribute, index) {
 
-            var et = moment(self.selectedTime).add(moment.duration("24:00:00"));
-            console.log("%s gathering hourly average data from %s to %s", attribute.Name, moment(self.selectedTime).toISOString(), et.toISOString());
+            var et = moment(self.selectedTime.toString()).add(moment.duration("24:00:00"));
+            console.log("%s gathering hourly average data from %s to %s", attribute.Name, moment(self.selectedTime.toString()).toISOString(), et.toISOString());
 
-            var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
+
+            console.log(self.selectedTime.toString());
+            var HourlyAverages = attribute.Links.SummaryData + '?startTime=' + moment(self.selectedTime.toString()).toISOString() + '&endTime=' + et.toISOString() + '&calculationBasis=TimeWeighted&summaryType=Average&summaryDuration=60m';
 
             console.log(encodeURI(HourlyAverages));
             return piWebApiHttpService.query(encodeURI(HourlyAverages)).then(function (response) {
@@ -285,7 +287,8 @@
                     if (row.time === undefined && rawVal.Value.Timestamp !== undefined) {
 
                         var date = moment.tz(rawVal.Value.Timestamp, "Europe/Paris");
-                        row.time = date.format('HH:mm');
+                        //var date = moment(rawVal.Value.Timestamp.toString());
+                        row.time = date.local().format('HH:mm');
                     }
 
 
@@ -339,7 +342,7 @@
                         // X axis, only once
                         if (k === 0) {
                             // chart
-                            var date = moment.tz(self.attributesData[k].data.Items[i].Value.Timestamp, "Europe/Paris");
+                            var date = moment.tz(self.attributesData[k].data.Items[i].Value.Timestamp.toString(), "Europe/Paris");
                             var time = date.format('HH:mm');
                             self.chartLabels.push(time);
                         }
@@ -376,6 +379,7 @@
             // however, if one enters the application with the direct url to this page, we need to initialize if.
             // in such situation the configuration stored in the localStorage is used
             //
+
             var conf = $scope.$parent.globals.configuration;
             piWebApiHttpService.SetAPIAuthentication(conf.authType, conf.user, conf.password);
             piWebApiHttpService.SetPIWebAPIServiceUrl(conf.url);
@@ -387,6 +391,8 @@
             else {
                 getData();
             }
+
+            self.inititialized = true;
 
         }
 
@@ -419,6 +425,9 @@
 
             $scope.$parent.globals.loading++;
             console.log($scope.$parent.loading);
+
+            self.selectedTime = moment(self.selectedTime.toString()).format("YYYY-MM-DD");
+            
 
             getAttributesData()
                 .catch(onError)
@@ -503,7 +512,7 @@
             for (var key in row.values) {
                 if (row.values[key].type === "flag") {
                     var editedValue = {};
-                    editedValue.timeStamp = moment(self.selectedTime).add(moment.duration(row.time));
+                    editedValue.timeStamp = moment(self.selectedTime.toString()).add(moment.duration(row.time));
                     editedValue.value = row.values[key].value;
                     editedValue.webId = row.values[key].webId;
                     self.editedValues.push(editedValue);

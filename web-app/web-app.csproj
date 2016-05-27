@@ -80,6 +80,7 @@
     <Content Include="app\shared\topnav\nav.html" />
     <Content Include="app\viewTemplate.html" />
     <Content Include="assets\css\style.css" />
+    <Content Include="assets\img\logo.jpg" />
     <Content Include="assets\img\ring-alt.gif" />
     <Content Include="bower_components\angular-aside\demo.html" />
     <Content Include="bower_components\angular-aside\dist\css\angular-aside.css" />
@@ -253,6 +254,8 @@
     <Content Include="bower_components\jquery\src\var\support.js" />
     <Content Include="bower_components\jquery\src\var\toString.js" />
     <Content Include="bower_components\jquery\src\wrap.js" />
+    <Content Include="bower_components\lodash\3.10.1\lodash.min.js" />
+    <Content Include="bower_components\moment.js\moment-timezone-with-data.min.0.5.4.js" />
     <Content Include="bower_components\ng-table\changelog.js" />
     <Content Include="bower_components\ng-table\dist\ng-table.css" />
     <Content Include="bower_components\ng-table\dist\ng-table.js" />
@@ -521,6 +524,7 @@
     <Content Include="bower_components\angular-chart.js\dist\angular-chart.js.tar.gz" />
     <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.css.map" />
     <Content Include="bower_components\angular-chart.js\dist\angular-chart.min.js.map" />
+    <Content Include="bower_components\moment.js\moment.min.js.2.13.0.js" />
     <None Include="web.Debug.config">
       <DependentUpon>web.config</DependentUpon>
     </None>
